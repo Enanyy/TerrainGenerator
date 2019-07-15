@@ -11,8 +11,6 @@ public class TerrainGenerator : MonoBehaviour {
 	[Range(0,6)]
 	public int editorPreviewLOD;
 
-    public NoiseSettings noiseSettings;
-    public HeightMapSettings heightMapSettings;
     public TerrainSettings terrainSettings;
    
 	
@@ -45,7 +43,7 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     public void DrawMapInEditor() {
-		TerrainData mapData = GenerateTerrainData (Vector2.zero);
+		TerrainData mapData = GenerateTerrainData (Vector2.zero,terrainSettings);
 
 		TerrainDisplay display = FindObjectOfType<TerrainDisplay> ();
 		if (drawMode == DrawMode.NoiseMap) {
@@ -53,7 +51,7 @@ public class TerrainGenerator : MonoBehaviour {
 		} else if (drawMode == DrawMode.ColourMap) {
 			display.DrawTexture (TextureGenerator.TextureFromColourMap (mapData.colourMap, terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
 		} else if (drawMode == DrawMode.Mesh) {
-			display.DrawMesh (MeshGenerator.GenerateTerrainMesh (mapData.heightMap, heightMapSettings, editorPreviewLOD), TextureGenerator.TextureFromColourMap (mapData.colourMap, terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
+			display.DrawMesh (MeshGenerator.GenerateTerrainMesh (mapData.heightMap, terrainSettings.heightMapSettings, editorPreviewLOD), TextureGenerator.TextureFromColourMap (mapData.colourMap, terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
 		}
 	}
 
@@ -90,9 +88,9 @@ public class TerrainGenerator : MonoBehaviour {
 
     }
 
-    public TerrainData GenerateTerrainData(Vector2 centre)
+    public static TerrainData GenerateTerrainData(Vector2 centre,TerrainSettings terrainSettings)
     {
-        float[,] noiseMap = Noise.GenerateNoiseData(terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize, noiseSettings,centre);
+        float[,] noiseMap = Noise.GenerateNoiseData(terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize, terrainSettings.heightMapSettings.noiseSettings,centre);
 
         Color[] colorMap = new Color[terrainSettings.terrainChunkSize * terrainSettings.terrainChunkSize];
         for (int y = 0; y < terrainSettings.terrainChunkSize; y++)
@@ -118,12 +116,7 @@ public class TerrainGenerator : MonoBehaviour {
         return new TerrainData(noiseMap, colorMap);
     }
 
-    public MeshData GenerateTerrainMesh(float[,] heightMap, int lod)
-    {
-        MeshData meshData = MeshGenerator.GenerateTerrainMesh(heightMap, heightMapSettings, lod);
-        return meshData;
-    }
-
+  
 }
 
 

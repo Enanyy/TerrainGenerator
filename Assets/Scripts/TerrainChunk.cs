@@ -40,7 +40,7 @@ public class TerrainChunk
         {
             lodMeshes[i] = new LODMesh(settings.detailLevels[i].lod, UpdateTerrainChunk);
         }
-        ThreadedDataRequester.RequestData(()=>TerrainGenerator.Instance.GenerateTerrainData(this.coord),OnTerrainDataReceived);
+        ThreadedDataRequester.RequestData(()=>TerrainGenerator.GenerateTerrainData(this.coord, settings),OnTerrainDataReceived);
     }
 
     void OnTerrainDataReceived(object mapData)
@@ -69,7 +69,7 @@ public class TerrainChunk
             }
             else if (!lodMesh.hasRequestedMesh)
             {
-                lodMesh.RequestMesh(mapData);
+                lodMesh.RequestMesh(mapData, settings.heightMapSettings);
             }
         }
     }
@@ -97,10 +97,10 @@ class LODMesh
         updateCallback(lod);
     }
 
-    public void RequestMesh(TerrainData mapData)
+    public void RequestMesh(TerrainData mapData,HeightMapSettings heightMapSettings)
     {
         hasRequestedMesh = true;
-        ThreadedDataRequester.RequestData(()=>TerrainGenerator.Instance.GenerateTerrainMesh(mapData.heightMap,lod), OnMeshDataReceived);
+        ThreadedDataRequester.RequestData(()=>MeshGenerator.GenerateTerrainMesh(mapData.heightMap, heightMapSettings,lod), OnMeshDataReceived);
        
     }
 

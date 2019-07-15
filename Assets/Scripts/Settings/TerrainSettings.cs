@@ -13,6 +13,8 @@ public struct TerrainColor
 [Serializable]
 public class TerrainSettings
 {
+    public HeightMapSettings heightMapSettings;
+
     public int terrainChunkSize = 241;
 
     public float terrainChunkScale = 5f;
