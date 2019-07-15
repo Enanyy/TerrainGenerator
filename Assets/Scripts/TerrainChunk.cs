@@ -6,46 +6,41 @@ public class TerrainChunk
 {
 
    private  GameObject meshObject;
-   private Vector2 position;
-   private Bounds bounds;
+   public Vector2 coord;
 
    private MeshRenderer meshRenderer;
    private MeshFilter meshFilter;
-
-   private LODInfo[] detailLevels;
    private LODMesh[] lodMeshes;
 
    private TerrainData mapData;
    private bool mapDataReceived;
 
+   private TerrainSettings settings;
 
-    public TerrainChunk(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material)
+    public TerrainChunk(Vector2 coord,Transform parent,TerrainSettings settings)
     {
-        this.detailLevels = detailLevels;
+        this.settings = settings;
 
-        position = coord * size;
-        bounds = new Bounds(position, Vector2.one * size);
-        Vector3 positionV3 = new Vector3(position.x, 0, position.y);
+        int size = settings.terrainChunkSize - 1;
+        this.coord = coord * size;
+
 
         meshObject = new GameObject("Terrain Chunk");
         meshRenderer = meshObject.AddComponent<MeshRenderer>();
         meshFilter = meshObject.AddComponent<MeshFilter>();
-        meshRenderer.material = material;
+        meshRenderer.material = settings.material;
 
-        meshObject.transform.position = positionV3 * TerrainGenerator.Instance.terrainChunkScale;
+        meshObject.transform.position = new Vector3(this.coord.x, 0, this.coord.y) * settings.terrainChunkScale;
         meshObject.transform.parent = parent;
-        meshObject.transform.localScale = Vector3.one * TerrainGenerator.Instance.terrainChunkScale;
+        meshObject.transform.localScale = Vector3.one * settings.terrainChunkScale;
 
 
-        lodMeshes = new LODMesh[detailLevels.Length];
-        for (int i = 0; i < detailLevels.Length; i++)
+        lodMeshes = new LODMesh[settings.detailLevels.Length];
+        for (int i = 0; i < settings.detailLevels.Length; i++)
         {
-            lodMeshes[i] = new LODMesh(detailLevels[i].lod, UpdateTerrainChunk);
+            lodMeshes[i] = new LODMesh(settings.detailLevels[i].lod, UpdateTerrainChunk);
         }
-
-        //TerrainGenerator.Instance.RequestMapData(position, OnTerrainDataReceived);
-
-        ThreadedDataRequester.RequestData(()=>TerrainGenerator.Instance.GenerateTerrainData(position),OnTerrainDataReceived);
+        ThreadedDataRequester.RequestData(()=>TerrainGenerator.Instance.GenerateTerrainData(this.coord),OnTerrainDataReceived);
     }
 
     void OnTerrainDataReceived(object mapData)
@@ -53,8 +48,9 @@ public class TerrainChunk
         this.mapData =(TerrainData) mapData;
         mapDataReceived = true;
 
-        Texture2D texture = TextureGenerator.TextureFromColourMap(this.mapData.colourMap, TerrainGenerator.terrainChunkSize,
-            TerrainGenerator.terrainChunkSize);
+        Texture2D texture = TextureGenerator.TextureFromColourMap(this.mapData.colourMap,
+            settings.terrainChunkSize,
+            settings.terrainChunkSize);
         meshRenderer.material.mainTexture = texture;
 
         UpdateTerrainChunk(TerrainGenerator.Instance.lod);
@@ -81,7 +77,6 @@ public class TerrainChunk
 
 class LODMesh
 {
-
     public Mesh mesh;
     public bool hasRequestedMesh;
     public bool hasMesh;
