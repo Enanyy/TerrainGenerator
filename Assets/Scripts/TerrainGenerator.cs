@@ -30,12 +30,13 @@ public class TerrainGenerator : MonoBehaviour {
 
     void Start()
     {
+        terrainSettings.textureSettings.ApplyToMaterial();
+
         for (int yOffset = -terrainSettings.chunkSize; yOffset <= terrainSettings.chunkSize; yOffset++)
         {
             for (int xOffset = -terrainSettings.chunkSize; xOffset <= terrainSettings.chunkSize; xOffset++)
             {
                 Vector2 coord = new Vector2(xOffset, yOffset);
-
 
                 mTerrainChunkDic.Add(coord, new TerrainChunk(coord, transform,terrainSettings));
             }
@@ -51,7 +52,7 @@ public class TerrainGenerator : MonoBehaviour {
 		} else if (drawMode == DrawMode.ColourMap) {
 			display.DrawTexture (TextureGenerator.TextureFromColourMap (mapData.colourMap, terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
 		} else if (drawMode == DrawMode.Mesh) {
-			display.DrawMesh (MeshGenerator.GenerateTerrainMesh (mapData.heightMap, terrainSettings.heightMapSettings, editorPreviewLOD), TextureGenerator.TextureFromColourMap (mapData.colourMap, terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
+			display.DrawMesh (MeshGenerator.GenerateTerrainMesh (mapData.heightMap, terrainSettings, editorPreviewLOD), TextureGenerator.TextureFromColourMap (mapData.colourMap, terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
 		}
 	}
 

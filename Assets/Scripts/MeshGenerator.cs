@@ -3,8 +3,8 @@ using System.Collections;
 
 public static class MeshGenerator {
 
-	public static MeshData GenerateTerrainMesh(float[,] heightMap,HeightMapSettings heightMapSettings, int levelOfDetail) {
-		AnimationCurve heightCurve = new AnimationCurve (heightMapSettings.meshHeightCurve.keys);
+	public static MeshData GenerateTerrainMesh(float[,] heightMap,TerrainSettings terrainSettings, int levelOfDetail) {
+		AnimationCurve heightCurve = new AnimationCurve (terrainSettings.heightMapSettings.meshHeightCurve.keys);
 
 		int width = heightMap.GetLength (0);
 		int height = heightMap.GetLength (1);
@@ -16,10 +16,23 @@ public static class MeshGenerator {
 
 		MeshData meshData = new MeshData (verticesPerLine, verticesPerLine);
 		int vertexIndex = 0;
+        meshData.minHeight = float.MaxValue;
+        meshData.maxHeight = float.MinValue;
 
 		for (int y = 0; y < height; y += meshSimplificationIncrement) {
 			for (int x = 0; x < width; x += meshSimplificationIncrement) {
-				meshData.vertices [vertexIndex] = new Vector3 (topLeftX + x, heightCurve.Evaluate (heightMap [x, y]) * heightMapSettings.meshHeightMultiplier, topLeftZ - y);
+
+                float heightY = heightCurve.Evaluate(heightMap[x, y]) * terrainSettings.heightMapSettings.meshHeightMultiplier;
+                if(heightY < meshData.minHeight)
+                {
+                    meshData.minHeight = heightY;
+                }
+                if(heightY > meshData.maxHeight)
+                {
+                    meshData.maxHeight = heightY;
+                }
+
+                meshData.vertices [vertexIndex] = new Vector3 (topLeftX + x, heightY, topLeftZ - y);
 				meshData.uvs [vertexIndex] = new Vector2 (x / (float)width, y / (float)height);
 
 				if (x < width - 1 && y < height - 1) {
@@ -42,6 +55,9 @@ public class MeshData {
 	public Vector2[] uvs;
 
 	int triangleIndex;
+
+    public float minHeight;
+    public float maxHeight;
 
 	public MeshData(int meshWidth, int meshHeight) {
 		vertices = new Vector3[meshWidth * meshHeight];

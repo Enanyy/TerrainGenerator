@@ -26,9 +26,8 @@ public class TerrainTextureSettings
     public Material material;
     public TerrainLayer[] layers;
 
-    public void ApplyToMaterial(float minHeight, float maxHeight)
+    public void ApplyToMaterial()
     {
-
         material.SetInt("layerCount", layers.Length);
         material.SetColorArray("baseColours", layers.Select(x => x.tint).ToArray());
         material.SetFloatArray("baseStartHeights", layers.Select(x => x.startHeight).ToArray());
@@ -37,8 +36,6 @@ public class TerrainTextureSettings
         material.SetFloatArray("baseTextureScales", layers.Select(x => x.textureScale).ToArray());
         Texture2DArray texturesArray = GenerateTextureArray(layers.Select(x => x.texture).ToArray());
         material.SetTexture("baseTextures", texturesArray);
-
-        UpdateMeshHeights(minHeight, maxHeight);
     }
 
     public void UpdateMeshHeights(float minHeight, float maxHeight)
