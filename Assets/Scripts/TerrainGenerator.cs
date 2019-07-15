@@ -2,45 +2,6 @@
 using System;
 using System.Collections.Generic;
 
-[Serializable]
-public class NoiseSettings
-{
-    public Noise.NormalizeMode mode = Noise.NormalizeMode.Global;
-    public float noiseScale = 20;
-
-    [Range(0, 100)]
-    public int octaves = 8;
-    [Range(0, 1)]
-    public float persistance= 0.5f;
-    [Range(1,10)]
-    public float lacunarity = 2;
-
-    public int seed;
-    public Vector2 offset;
-
-}
-[Serializable]
-public class HeightMapSettings
-{
-    public float meshHeightMultiplier = 10;
-    public AnimationCurve meshHeightCurve;
-
-}
-
-[Serializable]
-public class TerrainSettings
-{
-    public int terrainChunkSize = 241;
-
-    public float terrainChunkScale = 5f;
-
-    public LODInfo[] detailLevels;
-
-    public Material material;
-
-    public int chunkSize = 4;
-}
-
 public class TerrainGenerator : MonoBehaviour {
 
 	public enum DrawMode {NoiseMap, ColourMap, Mesh};
@@ -56,9 +17,6 @@ public class TerrainGenerator : MonoBehaviour {
    
 	
 	public bool autoUpdate;
-
-    public TerrainType[] regions;
-    
 
     public static TerrainGenerator Instance;
   
@@ -142,11 +100,11 @@ public class TerrainGenerator : MonoBehaviour {
             for (int x = 0; x < terrainSettings.terrainChunkSize; x++)
             {
                 float currentHeight = noiseMap[x, y];
-                for (int i = 0; i < regions.Length; i++)
+                for (int i = 0; i < terrainSettings.colors.Length; i++)
                 {
-                    if (currentHeight >= regions[i].height)
+                    if (currentHeight >= terrainSettings.colors[i].height)
                     {
-                        colorMap[y * terrainSettings.terrainChunkSize + x] = regions[i].colour;
+                        colorMap[y * terrainSettings.terrainChunkSize + x] = terrainSettings.colors[i].color;
                     }
                     else
                     {
@@ -168,12 +126,7 @@ public class TerrainGenerator : MonoBehaviour {
 
 }
 
-[System.Serializable]
-public struct TerrainType {
-	public string name;
-	public float height;
-	public Color colour;
-}
+
 
 public struct TerrainData {
 	public readonly float[,] heightMap;
