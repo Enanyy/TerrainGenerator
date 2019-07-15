@@ -100,11 +100,11 @@ public class TerrainGenerator : MonoBehaviour {
             for (int x = 0; x < terrainSettings.terrainChunkSize; x++)
             {
                 float currentHeight = noiseMap[x, y];
-                for (int i = 0; i < terrainSettings.colors.Length; i++)
+                for (int i = 0; i < terrainSettings.colorSettings.colors.Length; i++)
                 {
-                    if (currentHeight >= terrainSettings.colors[i].height)
+                    if (currentHeight >= terrainSettings.colorSettings.colors[i].height)
                     {
-                        colorMap[y * terrainSettings.terrainChunkSize + x] = terrainSettings.colors[i].color;
+                        colorMap[y * terrainSettings.terrainChunkSize + x] = terrainSettings.colorSettings.colors[i].color;
                     }
                     else
                     {

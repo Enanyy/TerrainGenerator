@@ -28,7 +28,7 @@ public class TerrainChunk
         meshObject = new GameObject("Terrain Chunk");
         meshRenderer = meshObject.AddComponent<MeshRenderer>();
         meshFilter = meshObject.AddComponent<MeshFilter>();
-        meshRenderer.material = settings.material;
+        meshRenderer.material = settings.colorSettings.material;
 
         meshObject.transform.position = new Vector3(this.coord.x, 0, this.coord.y) * settings.terrainChunkScale;
         meshObject.transform.parent = parent;

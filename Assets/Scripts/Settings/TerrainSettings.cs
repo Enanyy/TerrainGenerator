@@ -18,12 +18,12 @@ public class TerrainSettings
 
     public LODInfo[] detailLevels;
 
-    public Material material;
+   
 
     public int chunkSize = 4;
 
-    public TerrainColor[] colors;
+    public TerrainColorSettings colorSettings;
 
-    public TextureSettings textureSettings;
+    public TerrainTextureSettings textureSettings;
 }
 
