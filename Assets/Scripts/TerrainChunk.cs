@@ -17,7 +17,7 @@ public class TerrainChunk
 
    private TerrainData mapData;
    private bool mapDataReceived;
-   private int previousLODIndex = -1;
+
 
     public TerrainChunk(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material)
     {
@@ -57,28 +57,23 @@ public class TerrainChunk
             TerrainGenerator.terrainChunkSize);
         meshRenderer.material.mainTexture = texture;
 
-        UpdateTerrainChunk();
+        UpdateTerrainChunk(TerrainGenerator.Instance.lod);
     }
 
 
 
-    public void UpdateTerrainChunk()
+    public void UpdateTerrainChunk( int lod)
     {
         if (mapDataReceived)
         {
-            int lodIndex = 0;
-            if (lodIndex != previousLODIndex)
+            LODMesh lodMesh = lodMeshes[lod];
+            if (lodMesh.hasMesh)
             {
-                LODMesh lodMesh = lodMeshes[lodIndex];
-                if (lodMesh.hasMesh)
-                {
-                    previousLODIndex = lodIndex;
-                    meshFilter.mesh = lodMesh.mesh;
-                }
-                else if (!lodMesh.hasRequestedMesh)
-                {
-                    lodMesh.RequestMesh(mapData);
-                }
+                meshFilter.mesh = lodMesh.mesh;
+            }
+            else if (!lodMesh.hasRequestedMesh)
+            {
+                lodMesh.RequestMesh(mapData);
             }
         }
     }
@@ -91,9 +86,9 @@ class LODMesh
     public bool hasRequestedMesh;
     public bool hasMesh;
     int lod;
-    System.Action updateCallback;
+    System.Action<int> updateCallback;
 
-    public LODMesh(int lod, System.Action updateCallback)
+    public LODMesh(int lod, System.Action<int> updateCallback)
     {
         this.lod = lod;
         this.updateCallback = updateCallback;
@@ -104,7 +99,7 @@ class LODMesh
         mesh = ((MeshData)meshData).CreateMesh();
         hasMesh = true;
 
-        updateCallback();
+        updateCallback(lod);
     }
 
     public void RequestMesh(TerrainData mapData)
@@ -120,7 +115,7 @@ class LODMesh
 public struct LODInfo
 {
     public int lod;
-    public float visibleDstThreshold;
+    public float distance;
 }
 
 

@@ -29,11 +29,8 @@ public class TerrainGenerator : MonoBehaviour {
 
 	public bool autoUpdate;
 
-	public TerrainType[] regions;
-
-	Queue<MapThreadInfo<TerrainData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<TerrainData>>();
-	Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
-
+    public TerrainType[] regions;
+    
     private static TerrainGenerator mInstance;
 
     public static TerrainGenerator Instance
@@ -44,12 +41,9 @@ public class TerrainGenerator : MonoBehaviour {
             {
                 mInstance = FindObjectOfType<TerrainGenerator>();
             }
-
             return mInstance;
         }
     }
-
-
     public float terrainChunkScale = 5f;
 
 
@@ -59,13 +53,12 @@ public class TerrainGenerator : MonoBehaviour {
 
     public int chunkSize = 4;
 
+    public int lod = 0;
 
     Dictionary<Vector2, TerrainChunk> mTerrainChunkDic = new Dictionary<Vector2, TerrainChunk>();
 
     void Start()
     {
-
-
         for (int yOffset = -chunkSize; yOffset <= chunkSize; yOffset++)
         {
             for (int xOffset = -chunkSize; xOffset <= chunkSize; xOffset++)
@@ -73,7 +66,7 @@ public class TerrainGenerator : MonoBehaviour {
                 Vector2 coord = new Vector2(xOffset, yOffset);
 
 
-                mTerrainChunkDic.Add(coord, new TerrainChunk(coord, TerrainGenerator.terrainChunkSize - 1, detailLevels, transform, material));
+                mTerrainChunkDic.Add(coord, new TerrainChunk(coord, terrainChunkSize - 1, detailLevels, transform, material));
             }
         }
     }
@@ -93,16 +86,43 @@ public class TerrainGenerator : MonoBehaviour {
 
 
 
-	void Update() {
+	void Update()
+    {
+        float distance = CameraManager.Instance.distance;
 
-	}
+        int detailLevel = 0;
+
+        for (int i = 0; i < detailLevels.Length; ++i)
+        {
+            if (distance < detailLevels[i].distance)
+            {
+                detailLevel = i;break;
+            }
+        }
+
+        if (distance >= detailLevels[detailLevels.Length - 1].distance)
+        {
+            detailLevel = detailLevels[detailLevels.Length - 1].lod;
+        }
+
+        if (detailLevel != lod)
+        {
+            lod = detailLevel;
+            var it = mTerrainChunkDic.GetEnumerator();
+            while (it.MoveNext())
+            {
+                it.Current.Value.UpdateTerrainChunk(lod);
+            }
+        }
+
+    }
 
     public TerrainData GenerateTerrainData(Vector2 centre)
     {
         float[,] noiseMap = Noise.GenerateNoiseData(terrainChunkSize, terrainChunkSize, seed, noiseScale, octaves,
             persistance, lacunarity, centre + offset, normalizeMode);
 
-        Color[] colourMap = new Color[terrainChunkSize * terrainChunkSize];
+        Color[] colorMap = new Color[terrainChunkSize * terrainChunkSize];
         for (int y = 0; y < terrainChunkSize; y++)
         {
             for (int x = 0; x < terrainChunkSize; x++)
@@ -112,7 +132,7 @@ public class TerrainGenerator : MonoBehaviour {
                 {
                     if (currentHeight >= regions[i].height)
                     {
-                        colourMap[y * terrainChunkSize + x] = regions[i].colour;
+                        colorMap[y * terrainChunkSize + x] = regions[i].colour;
                     }
                     else
                     {
@@ -123,7 +143,7 @@ public class TerrainGenerator : MonoBehaviour {
         }
 
 
-        return new TerrainData(noiseMap, colourMap);
+        return new TerrainData(noiseMap, colorMap);
     }
 
     public MeshData GenerateTerrainMesh(float[,] heightMap, int lod)
