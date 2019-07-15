@@ -5,6 +5,7 @@ using UnityEngine;
 public struct TerrainColor
 {
     public string name;
+    [Range(0,1)]
     public float height;
     public Color color;
 }
@@ -17,8 +18,6 @@ public class TerrainSettings
     public float terrainChunkScale = 5f;
 
     public LODInfo[] detailLevels;
-
-   
 
     public int chunkSize = 4;
 
