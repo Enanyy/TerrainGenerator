@@ -40,6 +40,7 @@ public class TerrainTextureSettings
 
     public void UpdateMeshHeights(float minHeight, float maxHeight)
     {
+        Debug.Log(minHeight + "," + maxHeight);
         material.SetFloat("minHeight", minHeight);
         material.SetFloat("maxHeight", maxHeight);
     }

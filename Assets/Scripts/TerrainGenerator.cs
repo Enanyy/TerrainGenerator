@@ -43,22 +43,37 @@ public class TerrainGenerator : MonoBehaviour {
         }
     }
 
-    public void DrawMapInEditor() {
-		TerrainData mapData = GenerateTerrainData (Vector2.zero,terrainSettings);
+    public void DrawMapInEditor()
+    {
+        TerrainData terrainData = GenerateTerrainData(Vector2.zero, terrainSettings);
 
-		TerrainDisplay display = FindObjectOfType<TerrainDisplay> ();
-		if (drawMode == DrawMode.NoiseMap) {
-			display.DrawTexture (TextureGenerator.TextureFromHeightMap (mapData.heightMap));
-		} else if (drawMode == DrawMode.ColourMap) {
-			display.DrawTexture (TextureGenerator.TextureFromColourMap (mapData.colourMap, terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
-		} else if (drawMode == DrawMode.Mesh) {
-			display.DrawMesh (MeshGenerator.GenerateTerrainMesh (mapData.heightMap, terrainSettings, editorPreviewLOD), TextureGenerator.TextureFromColourMap (mapData.colourMap, terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
-		}
-	}
+        TerrainDisplay display = FindObjectOfType<TerrainDisplay>();
+        if (drawMode == DrawMode.NoiseMap)
+        {
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(terrainData.heightMap));
+        }
+        else if (drawMode == DrawMode.ColourMap)
+        {
+            display.DrawTexture(TextureGenerator.TextureFromColourMap(terrainData.colourMap,
+                terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
+        }
+        else if (drawMode == DrawMode.Mesh)
+        {
+
+            MeshData meshData =
+                MeshGenerator.GenerateTerrainMesh(terrainData.heightMap, terrainSettings, editorPreviewLOD);
+            terrainSettings.textureSettings.ApplyToMaterial();
+            terrainSettings.textureSettings.UpdateMeshHeights(meshData.minHeight, meshData.maxHeight);
+
+            display.DrawMesh(meshData,
+                TextureGenerator.TextureFromColourMap(terrainData.colourMap, terrainSettings.terrainChunkSize,
+                    terrainSettings.terrainChunkSize));
+        }
+    }
 
 
 
-	void Update()
+    void Update()
     {
         float distance = CameraManager.Instance.distance;
 

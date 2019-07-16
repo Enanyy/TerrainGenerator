@@ -16,22 +16,14 @@ public static class MeshGenerator {
 
 		MeshData meshData = new MeshData (verticesPerLine, verticesPerLine);
 		int vertexIndex = 0;
-        meshData.minHeight = float.MaxValue;
-        meshData.maxHeight = float.MinValue;
+        meshData.minHeight = heightCurve.Evaluate(0) * terrainSettings.heightMapSettings.meshHeightMultiplier;
+        meshData.maxHeight = heightCurve.Evaluate(1) * terrainSettings.heightMapSettings.meshHeightMultiplier;
 
-		for (int y = 0; y < height; y += meshSimplificationIncrement) {
+        for (int y = 0; y < height; y += meshSimplificationIncrement) {
 			for (int x = 0; x < width; x += meshSimplificationIncrement) {
 
                 float heightY = heightCurve.Evaluate(heightMap[x, y]) * terrainSettings.heightMapSettings.meshHeightMultiplier;
-                if(heightY < meshData.minHeight)
-                {
-                    meshData.minHeight = heightY;
-                }
-                if(heightY > meshData.maxHeight)
-                {
-                    meshData.maxHeight = heightY;
-                }
-
+               
                 meshData.vertices [vertexIndex] = new Vector3 (topLeftX + x, heightY, topLeftZ - y);
 				meshData.uvs [vertexIndex] = new Vector2 (x / (float)width, y / (float)height);
 

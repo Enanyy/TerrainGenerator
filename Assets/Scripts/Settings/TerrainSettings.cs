@@ -13,6 +13,12 @@ public struct TerrainColor
 [Serializable]
 public class TerrainSettings
 {
+    public enum TerrainType
+    {
+        Color,
+        Texture,
+    }
+
     public HeightMapSettings heightMapSettings;
 
     public int terrainChunkSize = 241;
@@ -22,6 +28,8 @@ public class TerrainSettings
     public LODInfo[] detailLevels;
 
     public int chunkSize = 4;
+
+    public TerrainType terrainType = TerrainType.Texture;
 
     public TerrainColorSettings colorSettings;
 

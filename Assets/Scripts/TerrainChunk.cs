@@ -29,9 +29,15 @@ public class TerrainChunk
         mMeshRenderer = mMeshObject.AddComponent<MeshRenderer>();
         mMeshFilter = mMeshObject.AddComponent<MeshFilter>();
 
-        //mMeshRenderer.material = settings.colorSettings.material;
+        if (settings.terrainType == TerrainSettings.TerrainType.Color)
+        {
+            mMeshRenderer.material = settings.colorSettings.material;
+        }
+        else
+        {
+            mMeshRenderer.material = settings.textureSettings.material;
+        }
 
-        mMeshRenderer.material = settings.textureSettings.material;
 
         mMeshObject.transform.position = new Vector3(this.coord.x, 0, this.coord.y) * settings.terrainChunkScale;
         mMeshObject.transform.parent = parent;
@@ -49,7 +55,10 @@ public class TerrainChunk
     void OnMeshDataReceived(LODMesh mesh)
     {
         UpdateTerrainChunk(mesh.lod);
-        mSettings.textureSettings.UpdateMeshHeights(mesh.meshData.minHeight, mesh.meshData.maxHeight);
+        if (mSettings.terrainType == TerrainSettings.TerrainType.Texture)
+        {
+            mSettings.textureSettings.UpdateMeshHeights(mesh.meshData.minHeight, mesh.meshData.maxHeight);
+        }
     }
 
     void OnTerrainDataReceived(object mapData)
@@ -57,10 +66,13 @@ public class TerrainChunk
         this.mTerrainData =(TerrainData) mapData;
         mReceivedTerrainData = true;
 
-        Texture2D texture = TextureGenerator.TextureFromColourMap(this.mTerrainData.colourMap,
-            mSettings.terrainChunkSize,
-            mSettings.terrainChunkSize);
-        mMeshRenderer.material.mainTexture = texture;
+        if (mSettings.terrainType == TerrainSettings.TerrainType.Color)
+        {
+            Texture2D texture = TextureGenerator.TextureFromColourMap(this.mTerrainData.colourMap,
+                mSettings.terrainChunkSize,
+                mSettings.terrainChunkSize);
+            mMeshRenderer.material.mainTexture = texture;
+        }
 
         UpdateTerrainChunk(TerrainGenerator.Instance.lod);
     }
