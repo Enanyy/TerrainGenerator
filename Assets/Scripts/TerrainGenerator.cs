@@ -1,95 +1,70 @@
 ﻿using UnityEngine;
-using System;
+using System.Collections;
 using System.Collections.Generic;
 
 public class TerrainGenerator : MonoBehaviour {
 
-	public enum DrawMode {NoiseMap, ColourMap, Mesh};
-	public DrawMode drawMode;
 
+	public LODInfo[] detailLevels;
+
+	public MeshSettings meshSettings;
+	public HeightMapSettings heightMapSettings;
+	public TextureData textureSettings;
+
+
+	public Material mapMaterial;
+
+
+	float meshWorldSize;
+	int chunksVisibleInViewDst;
+
+    public int lod;
+
+	Dictionary<Vector2, TerrainChunk> mTerrainChunkDic = new Dictionary<Vector2, TerrainChunk>();
 	
-	[Range(0,6)]
-	public int editorPreviewLOD;
+	void Start() {
 
-    public TerrainSettings terrainSettings;
-   
-	
-	public bool autoUpdate;
+		textureSettings.ApplyToMaterial (mapMaterial);
+		textureSettings.UpdateMeshHeights (mapMaterial, heightMapSettings.minHeight, heightMapSettings.maxHeight);
+		meshWorldSize = meshSettings.meshWorldSize;
+		chunksVisibleInViewDst = 4;
 
-    public static TerrainGenerator Instance;
-  
-    public int lod = 0;
-
-    Dictionary<Vector2, TerrainChunk> mTerrainChunkDic = new Dictionary<Vector2, TerrainChunk>();
+        int currentChunkCoordX = Mathf.RoundToInt(transform.position.x / meshWorldSize);
+        int currentChunkCoordY = Mathf.RoundToInt(transform.position.y / meshWorldSize);
 
 
-    void Awake()
-    {
-        Instance = this;
-    }
 
-    void Start()
-    {
-        terrainSettings.textureSettings.ApplyToMaterial();
-
-        for (int yOffset = -terrainSettings.chunkSize; yOffset <= terrainSettings.chunkSize; yOffset++)
+        for (int yOffset = -chunksVisibleInViewDst; yOffset <= chunksVisibleInViewDst; yOffset++)
         {
-            for (int xOffset = -terrainSettings.chunkSize; xOffset <= terrainSettings.chunkSize; xOffset++)
+            for (int xOffset = -chunksVisibleInViewDst; xOffset <= chunksVisibleInViewDst; xOffset++)
             {
-                Vector2 coord = new Vector2(xOffset, yOffset);
+                Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
 
-                mTerrainChunkDic.Add(coord, new TerrainChunk(coord, transform,terrainSettings));
+                TerrainChunk newChunk = new TerrainChunk(viewedChunkCoord, heightMapSettings, meshSettings,
+                    detailLevels, transform, mapMaterial);
+                mTerrainChunkDic.Add(viewedChunkCoord, newChunk);
+
+                newChunk.Load();
             }
         }
     }
 
-    public void DrawMapInEditor()
-    {
-        TerrainData terrainData = GenerateTerrainData(Vector2.zero, terrainSettings);
-
-        TerrainDisplay display = FindObjectOfType<TerrainDisplay>();
-        if (drawMode == DrawMode.NoiseMap)
-        {
-            display.DrawTexture(TextureGenerator.TextureFromHeightMap(terrainData.heightMap));
-        }
-        else if (drawMode == DrawMode.ColourMap)
-        {
-            display.DrawTexture(TextureGenerator.TextureFromColourMap(terrainData.colourMap,
-                terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize));
-        }
-        else if (drawMode == DrawMode.Mesh)
-        {
-
-            MeshData meshData =
-                MeshGenerator.GenerateTerrainMesh(terrainData.heightMap, terrainSettings, editorPreviewLOD);
-            terrainSettings.textureSettings.ApplyToMaterial();
-            terrainSettings.textureSettings.UpdateMeshHeights(meshData.minHeight, meshData.maxHeight);
-
-            display.DrawMesh(meshData,
-                TextureGenerator.TextureFromColourMap(terrainData.colourMap, terrainSettings.terrainChunkSize,
-                    terrainSettings.terrainChunkSize));
-        }
-    }
-
-
-
-    void Update()
-    {
+	void Update() {
         float distance = CameraManager.Instance.distance;
 
         int detailLevel = 0;
 
-        for (int i = 0; i < terrainSettings.detailLevels.Length; ++i)
+        for (int i = 0; i < detailLevels.Length; ++i)
         {
-            if (distance < terrainSettings.detailLevels[i].distance)
+            if (distance < detailLevels[i].distance)
             {
-                detailLevel = i;break;
+                detailLevel = i; break;
             }
         }
 
-        if (distance >= terrainSettings.detailLevels[terrainSettings.detailLevels.Length - 1].distance)
+        if (distance >= detailLevels[detailLevels.Length - 1].distance)
         {
-            detailLevel = terrainSettings.detailLevels[terrainSettings.detailLevels.Length - 1].lod;
+            detailLevel = detailLevels[detailLevels.Length - 1].lod;
         }
 
         if (detailLevel != lod)
@@ -101,49 +76,13 @@ public class TerrainGenerator : MonoBehaviour {
                 it.Current.Value.UpdateTerrainChunk(lod);
             }
         }
-
     }
-
-    public static TerrainData GenerateTerrainData(Vector2 centre,TerrainSettings terrainSettings)
-    {
-        float[,] noiseMap = Noise.GenerateNoiseData(terrainSettings.terrainChunkSize, terrainSettings.terrainChunkSize, terrainSettings.heightMapSettings.noiseSettings,centre);
-
-        Color[] colorMap = new Color[terrainSettings.terrainChunkSize * terrainSettings.terrainChunkSize];
-        for (int y = 0; y < terrainSettings.terrainChunkSize; y++)
-        {
-            for (int x = 0; x < terrainSettings.terrainChunkSize; x++)
-            {
-                float currentHeight = noiseMap[x, y];
-                for (int i = 0; i < terrainSettings.colorSettings.colors.Length; i++)
-                {
-                    if (currentHeight >= terrainSettings.colorSettings.colors[i].height)
-                    {
-                        colorMap[y * terrainSettings.terrainChunkSize + x] = terrainSettings.colorSettings.colors[i].color;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-
-
-        return new TerrainData(noiseMap, colorMap);
-    }
-
-  
+		
 }
 
-
-
-public struct TerrainData {
-	public readonly float[,] heightMap;
-	public readonly Color[] colourMap;
-
-	public TerrainData (float[,] heightMap, Color[] colourMap)
-	{
-		this.heightMap = heightMap;
-		this.colourMap = colourMap;
-	}
+[System.Serializable]
+public struct LODInfo {
+	[Range(0,MeshSettings.numSupportedLODs-1)]
+	public int lod;
+	public float distance;
 }

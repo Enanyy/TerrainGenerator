@@ -1,87 +1,78 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 
-public class TerrainChunk
-{
+public class TerrainChunk {
+	
 
-   private  GameObject mMeshObject;
-   public Vector2 coord;
+	public Vector2 coord;
+	 
+	private GameObject mMeshObject;
+    private Vector2 mSampleCenter;
 
-   private MeshRenderer mMeshRenderer;
-   private MeshFilter mMeshFilter;
-   private LODMesh[] mLODMeshes;
 
-   private TerrainData mTerrainData;
-   private bool mReceivedTerrainData;
+    private MeshRenderer mMeshRenderer;
+    private MeshFilter mMeshFilter;
 
-   private TerrainSettings mSettings;
 
-    public TerrainChunk(Vector2 coord,Transform parent,TerrainSettings settings)
+    private LODInfo[] mDetailLevels;
+    private LODMesh[] mLODMeshes;
+
+
+    private HeightMap mHeightMap;
+    private bool mHeightMapReceived;
+
+
+    private HeightMapSettings mHeightMapSettings;
+    private MeshSettings mMeshSettings;
+
+
+	public TerrainChunk(Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels,  Transform parent,  Material material) {
+		this.coord = coord;
+		this.mDetailLevels = detailLevels;
+
+		this.mHeightMapSettings = heightMapSettings;
+		this.mMeshSettings = meshSettings;
+
+
+		mSampleCenter = coord * meshSettings.meshWorldSize / meshSettings.meshScale;
+		Vector2 position = coord * meshSettings.meshWorldSize ;
+		
+
+		mMeshObject = new GameObject("Terrain Chunk");
+		mMeshRenderer = mMeshObject.AddComponent<MeshRenderer>();
+		mMeshFilter = mMeshObject.AddComponent<MeshFilter>();
+		
+		mMeshRenderer.material = material;
+
+		mMeshObject.transform.position = new Vector3(position.x,0,position.y);
+		mMeshObject.transform.parent = parent;
+
+
+		mLODMeshes = new LODMesh[detailLevels.Length];
+		for (int i = 0; i < detailLevels.Length; i++) {
+			mLODMeshes[i] = new LODMesh(detailLevels[i].lod);
+			mLODMeshes[i].updateCallback += UpdateTerrainChunk;
+			
+		}
+
+	}
+
+	public void Load() {
+		ThreadedDataRequester.RequestData(() => HeightMapGenerator.GenerateHeightMap (mMeshSettings.numVertsPerLine, mMeshSettings.numVertsPerLine, mHeightMapSettings, mSampleCenter), OnHeightMapReceived);
+	}
+
+
+
+	void OnHeightMapReceived(object heightMapObject) {
+		this.mHeightMap = (HeightMap)heightMapObject;
+		mHeightMapReceived = true;
+
+		UpdateTerrainChunk (0);
+	}
+
+
+    public void UpdateTerrainChunk(int lod)
     {
-        this.mSettings = settings;
-
-        int size = settings.terrainChunkSize - 1;
-        this.coord = coord * size;
-
-
-        mMeshObject = new GameObject("Terrain Chunk");
-        mMeshRenderer = mMeshObject.AddComponent<MeshRenderer>();
-        mMeshFilter = mMeshObject.AddComponent<MeshFilter>();
-
-        if (settings.terrainType == TerrainSettings.TerrainType.Color)
-        {
-            mMeshRenderer.material = settings.colorSettings.material;
-        }
-        else
-        {
-            mMeshRenderer.material = settings.textureSettings.material;
-        }
-
-
-        mMeshObject.transform.position = new Vector3(this.coord.x, 0, this.coord.y) * settings.terrainChunkScale;
-        mMeshObject.transform.parent = parent;
-        mMeshObject.transform.localScale = Vector3.one * settings.terrainChunkScale;
-
-
-        mLODMeshes = new LODMesh[settings.detailLevels.Length];
-        for (int i = 0; i < settings.detailLevels.Length; i++)
-        {
-            mLODMeshes[i] = new LODMesh(settings.detailLevels[i].lod, OnMeshDataReceived);
-        }
-        ThreadedDataRequester.RequestData(()=>TerrainGenerator.GenerateTerrainData(this.coord, settings),OnTerrainDataReceived);
-    }
-
-    void OnMeshDataReceived(LODMesh mesh)
-    {
-        UpdateTerrainChunk(mesh.lod);
-        if (mSettings.terrainType == TerrainSettings.TerrainType.Texture)
-        {
-            mSettings.textureSettings.UpdateMeshHeights(mesh.meshData.minHeight, mesh.meshData.maxHeight);
-        }
-    }
-
-    void OnTerrainDataReceived(object mapData)
-    {
-        this.mTerrainData =(TerrainData) mapData;
-        mReceivedTerrainData = true;
-
-        if (mSettings.terrainType == TerrainSettings.TerrainType.Color)
-        {
-            Texture2D texture = TextureGenerator.TextureFromColourMap(this.mTerrainData.colourMap,
-                mSettings.terrainChunkSize,
-                mSettings.terrainChunkSize);
-            mMeshRenderer.material.mainTexture = texture;
-        }
-
-        UpdateTerrainChunk(TerrainGenerator.Instance.lod);
-    }
-
-
-
-    public void UpdateTerrainChunk( int lod)
-    {
-        if (mReceivedTerrainData)
+        if (mHeightMapReceived)
         {
             LODMesh lodMesh = mLODMeshes[lod];
             if (lodMesh.hasMesh)
@@ -90,57 +81,34 @@ public class TerrainChunk
             }
             else if (!lodMesh.hasRequestedMesh)
             {
-                lodMesh.RequestMesh(mTerrainData, mSettings);
+                lodMesh.RequestMesh(mHeightMap, mMeshSettings);
             }
         }
     }
-
-    void OnMeshDataReceived(MeshData meshData)
-    {
-
-    }
 }
 
-class LODMesh
-{
-    public Mesh mesh;
-    public bool hasRequestedMesh;
-    public bool hasMesh;
-    public int lod;
-    System.Action<LODMesh> updateCallback;
-   
-    public MeshData meshData;
+class LODMesh {
 
-    public LODMesh(int lod, System.Action<LODMesh> updateCallback)
-    {
-        this.lod = lod;
-        this.updateCallback = updateCallback;
-    }
+	public Mesh mesh;
+	public bool hasRequestedMesh;
+	public bool hasMesh;
+	int lod;
+	public event System.Action<int> updateCallback;
 
-    void OnMeshDataReceived(object meshData)
-    {
-        this.meshData = (MeshData)meshData;
-        mesh = this.meshData.CreateMesh();
-        hasMesh = true;
+	public LODMesh(int lod) {
+		this.lod = lod;
+	}
 
-        updateCallback(this);
+	void OnMeshDataReceived(object meshDataObject) {
+		mesh = ((MeshData)meshDataObject).CreateMesh ();
+		hasMesh = true;
 
-       
-    }
+		updateCallback (lod);
+	}
 
-    public void RequestMesh(TerrainData mapData,TerrainSettings terrainSettings)
-    {
-        hasRequestedMesh = true;
-        ThreadedDataRequester.RequestData(()=>MeshGenerator.GenerateTerrainMesh(mapData.heightMap, terrainSettings,lod), OnMeshDataReceived); 
-    }
+	public void RequestMesh(HeightMap heightMap, MeshSettings meshSettings) {
+		hasRequestedMesh = true;
+		ThreadedDataRequester.RequestData (() => MeshGenerator.GenerateTerrainMesh (heightMap.values, meshSettings, lod), OnMeshDataReceived);
+	}
 
 }
-
-[System.Serializable]
-public struct LODInfo
-{
-    public int lod;
-    public float distance;
-}
-
-
