@@ -138,8 +138,10 @@ public class TerrainGenerator : MonoBehaviour {
 
     }
 
-    void Update() {
-       
+    private void Update()
+    {
+
+        ThreadQueue.Update();
     }
 }
 

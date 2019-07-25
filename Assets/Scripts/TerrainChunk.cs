@@ -12,14 +12,10 @@ public class TerrainChunk {
     private MeshRenderer mMeshRenderer;
     private MeshFilter mMeshFilter;
 
-
-    private LODInfo[] mDetailLevels;
     private LODMesh[] mLODMeshes;
-
 
     private HeightMap mHeightMap;
     private bool mRequestingHeightMap;
-
 
     private HeightMapSettings mHeightMapSettings;
     private MeshSettings mMeshSettings;
@@ -29,8 +25,6 @@ public class TerrainChunk {
 	public TerrainChunk(TerrainGenerator terrain, Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels)
     {
         this.mTerrain = terrain;
-
-		this.mDetailLevels = detailLevels;
 
 		this.mHeightMapSettings = heightMapSettings;
 		this.mMeshSettings = meshSettings;
@@ -77,7 +71,7 @@ public class TerrainChunk {
         if (mRequestingHeightMap == false)
         {
             mRequestingHeightMap = true;
-            ThreadedDataRequester.RequestData(
+            ThreadQueue.DoFunc(
                 () => HeightMapGenerator.GenerateHeightMap(mMeshSettings.numVertsPerLine, mMeshSettings.numVertsPerLine,
                     mHeightMapSettings, mSampleCenter), OnHeightMapReceived);
         }
@@ -154,7 +148,7 @@ class LODMesh
         {
             this.heightMap = heightMap;
             mRequestingMesh = true;
-            ThreadedDataRequester.RequestData(() => MeshGenerator.GenerateTerrainMesh(heightMap.values, meshSettings, lod), OnMeshDataReceived);
+            ThreadQueue.DoFunc(() => MeshGenerator.GenerateTerrainMesh(heightMap.values, meshSettings, lod), OnMeshDataReceived);
         }
     }
 
