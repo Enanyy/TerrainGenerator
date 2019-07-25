@@ -56,17 +56,15 @@ public class TerrainChunk {
             mMeshObject = new GameObject("Terrain Chunk-" + this.coord.ToString());
             mMeshRenderer = mMeshObject.AddComponent<MeshRenderer>();
             mMeshFilter = mMeshObject.AddComponent<MeshFilter>();
+            mMeshRenderer.material = mTerrain.material;
+            mMeshObject.transform.parent = mTerrain.transform;
         }
         else
         {
             mMeshObject.name = "Terrain Chunk-" + this.coord.ToString();
         }
 
-        mMeshRenderer.material = mTerrain.material;
-
         mMeshObject.transform.position = new Vector3(position.x, 0, position.y);
-        mMeshObject.transform.parent = mTerrain.transform;
-
 
         if (mHeightMap != null && mHeightMap.sampleCenter != mSampleCenter)
         {
