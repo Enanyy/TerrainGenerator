@@ -65,12 +65,10 @@ public class MeshData
 
     public void AddTriangle(int a, int b, int c)
     {
-        //Debug.Log("Lenght=" + triangles.Length + " index=" + triangleIndex);
         triangles[triangleIndex] = a;
         triangles[triangleIndex + 1] = b;
         triangles[triangleIndex + 2] = c;
         triangleIndex += 3;
-
     }
 
 

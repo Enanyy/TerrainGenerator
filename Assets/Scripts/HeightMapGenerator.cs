@@ -4,8 +4,9 @@ using UnityEngine;
 
 public static class HeightMapGenerator {
 
-	public static HeightMap GenerateHeightMap(int width, int height, HeightMapSettings settings, Vector2 sampleCentre) {
-		float[,] values = Noise.GenerateNoiseMap (width, height, settings.noiseSettings, sampleCentre);
+	public static HeightMap GenerateHeightMap(int width, int height, HeightMapSettings settings, Vector2 sampleCenter)
+    {
+		float[,] values = Noise.GenerateNoiseMap (width, height, settings.noiseSettings, sampleCenter);
 
 		AnimationCurve heightCurve_threadsafe = new AnimationCurve (settings.heightCurve.keys);
 
@@ -25,18 +26,21 @@ public static class HeightMapGenerator {
 			}
 		}
 
-		return new HeightMap (values, minValue, maxValue);
+		return new HeightMap (sampleCenter, values, minValue, maxValue);
 	}
 
 }
 
-public struct HeightMap {
+public class HeightMap
+{
+    public readonly Vector2 sampleCenter;
 	public readonly float[,] values;
 	public readonly float minValue;
 	public readonly float maxValue;
 
-	public HeightMap (float[,] values, float minValue, float maxValue)
-	{
+	public HeightMap (Vector2 sampleCenter, float[,] values, float minValue, float maxValue)
+    {
+        this.sampleCenter = sampleCenter;
 		this.values = values;
 		this.minValue = minValue;
 		this.maxValue = maxValue;

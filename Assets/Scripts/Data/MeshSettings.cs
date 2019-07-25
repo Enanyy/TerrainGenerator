@@ -32,7 +32,7 @@ public class MeshSettings : UpdatableData {
 
 	public float meshWorldSize {
 		get {
-			return (numVertsPerLine - 3) * meshScale;
+			return (numVertsPerLine - 1) * meshScale;
 		}
 	}
 

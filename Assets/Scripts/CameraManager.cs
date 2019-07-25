@@ -1,26 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+[ExecuteInEditMode]
 public class CameraManager : MonoBehaviour
 {
-    private static CameraManager _instance;
+    private static CameraManager mInstance;
 
     public static CameraManager Instance
     {
         get
         {
-            if (_instance == null)
+            if (mInstance == null)
             {
                 if (Camera.main)
                 {
-                    _instance = Camera.main.gameObject.GetComponent<CameraManager>();
-                    if (_instance == null)
+                    mInstance = Camera.main.gameObject.GetComponent<CameraManager>();
+                    if (mInstance == null)
                     {
-                        _instance = Camera.main.gameObject.AddComponent<CameraManager>();
-                    }
-                    
-
+                        mInstance = Camera.main.gameObject.AddComponent<CameraManager>();
+                    }                 
                 }
                 else
                 {
@@ -30,16 +28,30 @@ public class CameraManager : MonoBehaviour
                     camera.clearFlags = CameraClearFlags.Skybox;
                     camera.fieldOfView = 60;
                    
-                    _instance = go.AddComponent<CameraManager>();
+                    mInstance = go.AddComponent<CameraManager>();
 
                 }
             }
 
-            return _instance;
+            return mInstance;
         }
     }
 
     public Camera mainCamera { get; private set; }
+
+    public event Action<float> onZoom;
+    public event Action onMove;
+
+    public Vector3 center
+    {
+        get
+        {
+            Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0));
+            float distance;
+            mPlane.Raycast(ray, out distance);
+            return ray.GetPoint(distance);
+        }
+    }
 
     public void Init()
     {
@@ -49,23 +61,22 @@ public class CameraManager : MonoBehaviour
     void Awake()
     {
         mainCamera = GetComponent<Camera>();
+        UpdateCorner();
     }
 
     void Update()
     {
-        Drag();
-        Scroll();
+        Move();
+        Zoom();
     }
 
-    Vector3 oldMousePosition;
-    Plane mPlane = new Plane(Vector3.up, Vector3.zero);
-    void Drag()
+    private Vector3 oldMousePosition;
+    private Plane mPlane = new Plane(Vector3.up, Vector3.zero);
+    void Move()
     {
-        if (Input.GetMouseButton(1) && mainCamera)
+        if (Input.GetMouseButton(0) && mainCamera)
         {
-            float xDelta = Input.GetAxis("Mouse X");
-            float yDelta = Input.GetAxis("Mouse Y");
-            if (xDelta != 0.0f || yDelta != 0.0f)
+            if (Input.mousePosition - oldMousePosition != Vector3.zero)
             {
                 if (oldMousePosition != Vector3.zero)
                 {
@@ -86,10 +97,17 @@ public class CameraManager : MonoBehaviour
                 }
 
                 oldMousePosition = Input.mousePosition;
+
+                UpdateCorner();
+
+                if (onMove != null)
+                {
+                    onMove();
+                }
             }
 
         }
-        if (Input.GetMouseButtonUp(1))
+        if (Input.GetMouseButtonUp(0))
         {
             oldMousePosition = Vector3.zero;
         }
@@ -104,7 +122,7 @@ public class CameraManager : MonoBehaviour
     public float distance;
 
     
-    void Scroll()
+    void Zoom()
     {
         if (mainCamera == null)
         {
@@ -131,6 +149,13 @@ public class CameraManager : MonoBehaviour
             {
                 mainCamera.transform.position = ray.GetPoint(distance - maxDistance);
             }
+
+            UpdateCorner();
+
+            if (onZoom != null)
+            {
+                onZoom(distance);
+            }
         }
 
     }
@@ -144,5 +169,63 @@ public class CameraManager : MonoBehaviour
 
         return ray.GetPoint(distance);
     }
+
+   
+
+    #region DrawView
+    public bool rendering = true;
+    public Color color = Color.red;
+
+
+    public Material material;
+
+
+    public Vector3 leftBottom { get; private set; }
+    public Vector3 leftTop { get; private set; }
+    public Vector3 rightBottom { get; private set; }
+    public Vector3 rightTop { get; private set; }
+
+    private void UpdateCorner()
+    {
+        if (rendering)
+        {
+            leftBottom = RayCast(Vector3.zero);
+            leftTop = RayCast(new Vector3(0, Screen.height, 0));
+            rightTop = RayCast(new Vector3(Screen.width, Screen.height, 0));
+            rightBottom = RayCast(new Vector3(Screen.width, 0, 0));
+        }
+    }
+    private void OnRenderObject()
+    {
+        if (material && rendering)
+        {
+            material.SetPass(0);
+            GL.Begin(GL.LINE_STRIP);
+            GL.Color(color);
+            GL.Vertex(leftBottom);
+            GL.Vertex(leftTop);
+            GL.Vertex(rightTop);
+            GL.Vertex(rightBottom);
+            GL.Vertex(leftBottom);
+            GL.End();
+        }
+    }
+
+    Vector3 RayCast(Vector3 screenPosition)
+    {
+        if (mainCamera != null)
+        {
+            Ray ray = mainCamera.ScreenPointToRay(screenPosition);
+            float distance;
+            mPlane.Raycast(ray, out distance);
+            Vector3 point = ray.GetPoint(distance);
+            point.y += 0.1f;
+            return point;
+        }
+        return Vector3.zero;
+    }
+
+
+    #endregion
 }
 

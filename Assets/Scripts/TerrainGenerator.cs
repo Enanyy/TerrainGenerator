@@ -12,43 +12,100 @@ public class TerrainGenerator : MonoBehaviour {
 	public TextureData textureSettings;
 
 
-	public Material mapMaterial;
+	public Material material;
 
-	public int terrainSize = 4;
+	public int terrainSizeX = 4;
 
     public int lod;
 
-	Dictionary<Vector2, TerrainChunk> mTerrainChunkDic = new Dictionary<Vector2, TerrainChunk>();
-	
-	void Start() {
+    private Dictionary<Vector2, TerrainChunk> mTerrainChunkDic = new Dictionary<Vector2, TerrainChunk>();
+    private Dictionary<Vector2, TerrainChunk> mTerrainChunkDic2 = new Dictionary<Vector2, TerrainChunk>();
+    private Queue<TerrainChunk> mCacheChunkList = new Queue<TerrainChunk>();
 
-		textureSettings.ApplyToMaterial (mapMaterial);
-		textureSettings.UpdateMeshHeights (mapMaterial, heightMapSettings.minHeight, heightMapSettings.maxHeight);
+	void Start()
+    {
+        CameraManager.Instance.onZoom -= OnZoom;
+        CameraManager.Instance.onZoom += OnZoom;
+        CameraManager.Instance.onMove -= OnMove;
+        CameraManager.Instance.onMove += OnMove;
 
+        textureSettings.ApplyToMaterial (material);
+		textureSettings.UpdateMeshHeights (material, heightMapSettings.minHeight, heightMapSettings.maxHeight);
 
-        int currentChunkCoordX = Mathf.RoundToInt(transform.position.x / meshSettings.meshWorldSize);
-        int currentChunkCoordY = Mathf.RoundToInt(transform.position.y / meshSettings.meshWorldSize);
+        UpdateViewChunk();
+    }
 
+    void UpdateViewChunk()
+    {
 
+        float distance = Mathf.Abs(CameraManager.Instance.leftTop.x - CameraManager.Instance.rightTop.x);
 
-        for (int yOffset = -terrainSize; yOffset <= terrainSize; yOffset++)
+        int chunkSize = (int)(distance / meshSettings.meshWorldSize);
+        if (distance % meshSettings.meshWorldSize > 0) chunkSize++;
+
+        terrainSizeX = chunkSize / 2 + 1;
+        
+        Vector3 center = CameraManager.Instance.center;
+
+        int currentChunkCoordX = Mathf.RoundToInt(center.x / meshSettings.meshWorldSize);
+        int currentChunkCoordY = Mathf.RoundToInt(center.z / meshSettings.meshWorldSize);
+
+        mTerrainChunkDic2.Clear();
+
+        for (int yOffset = -terrainSizeX; yOffset <= terrainSizeX; yOffset++)
         {
-            for (int xOffset = -terrainSize; xOffset <= terrainSize; xOffset++)
+            for (int xOffset = -terrainSizeX; xOffset <= terrainSizeX; xOffset++)
             {
-                Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
+                Vector2 coord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
+                TerrainChunk chunk = null;
+                mTerrainChunkDic.TryGetValue(coord, out chunk);
+                if (chunk != null)
+                {
+                   mTerrainChunkDic2.Add(coord, chunk);
+                   mTerrainChunkDic.Remove(coord);
+                }
+                else
+                {
+                    if (mCacheChunkList.Count > 0)
+                    {
+                        chunk = mCacheChunkList.Dequeue();
+                        chunk.SetCoord(coord);
+                        chunk.SetActive(true);
+                    }
+                    else
+                    {
+                        chunk = new TerrainChunk(this, coord, heightMapSettings, meshSettings, detailLevels);
+                    }
 
-                TerrainChunk newChunk = new TerrainChunk(viewedChunkCoord, heightMapSettings, meshSettings,
-                    detailLevels, transform, mapMaterial);
-                mTerrainChunkDic.Add(viewedChunkCoord, newChunk);
+                    mTerrainChunkDic2.Add(coord, chunk);
 
-                newChunk.Load();
+                    chunk.Load();
+                }
             }
         }
 
+        var tmp = mTerrainChunkDic;
+        mTerrainChunkDic = mTerrainChunkDic2;
+        mTerrainChunkDic2 = tmp;
+
+        var it = mTerrainChunkDic2.GetEnumerator();
+        while (it.MoveNext())
+        {
+            it.Current.Value.SetActive(false);
+            mCacheChunkList.Enqueue(it.Current.Value);
+        }
+        mTerrainChunkDic2.Clear();
+
     }
 
-    void Update() {
-        float distance = CameraManager.Instance.distance;
+    void OnMove()
+    {
+        UpdateViewChunk();
+    }
+
+    void OnZoom(float distance)
+    {
+        UpdateViewChunk();
 
         int detailLevel = 0;
 
@@ -75,10 +132,15 @@ public class TerrainGenerator : MonoBehaviour {
             }
         }
 
-        textureSettings.ApplyToMaterial(mapMaterial);
-        textureSettings.UpdateMeshHeights(mapMaterial, heightMapSettings.minHeight, heightMapSettings.maxHeight);
+        textureSettings.ApplyToMaterial(material);
+        textureSettings.UpdateMeshHeights(material, heightMapSettings.minHeight, heightMapSettings.maxHeight);
+
+
     }
 
+    void Update() {
+       
+    }
 }
 
 [System.Serializable]
