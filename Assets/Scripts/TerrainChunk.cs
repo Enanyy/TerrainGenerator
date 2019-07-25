@@ -37,7 +37,7 @@ public class TerrainChunk {
 		Vector2 position = coord * meshSettings.meshWorldSize ;
 		
 
-		mMeshObject = new GameObject("Terrain Chunk");
+		mMeshObject = new GameObject("Terrain Chunk-"+this.coord.ToString());
 		mMeshRenderer = mMeshObject.AddComponent<MeshRenderer>();
 		mMeshFilter = mMeshObject.AddComponent<MeshFilter>();
 		

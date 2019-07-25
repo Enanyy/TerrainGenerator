@@ -13,16 +13,31 @@ public class TextureData : UpdatableData {
 	float savedMinHeight;
 	float savedMaxHeight;
 
-	public void ApplyToMaterial(Material material) {
-		
-		material.SetInt ("layerCount", layers.Length);
-		material.SetColorArray ("baseColours", layers.Select(x => x.tint).ToArray());
-		material.SetFloatArray ("baseStartHeights", layers.Select(x => x.startHeight).ToArray());
-		material.SetFloatArray ("baseBlends", layers.Select(x => x.blendStrength).ToArray());
-		material.SetFloatArray ("baseColourStrength", layers.Select(x => x.tintStrength).ToArray());
-		material.SetFloatArray ("baseTextureScales", layers.Select(x => x.textureScale).ToArray());
-		Texture2DArray texturesArray = GenerateTextureArray (layers.Select (x => x.texture).ToArray ());
-		material.SetTexture ("baseTextures", texturesArray);
+    private Color[] tints;
+    private float[] startHeights;
+    private float[] blendStrengths;
+    private float[] tintStrengts;
+    private float[] textureScales;
+    private Texture2DArray textures;
+
+    public void ApplyToMaterial(Material material)
+    {
+
+        if (tints == null) tints = layers.Select(x => x.tint).ToArray();
+        if (startHeights == null) startHeights = layers.Select(x => x.startHeight).ToArray();
+        if (blendStrengths == null) blendStrengths = layers.Select(x => x.blendStrength).ToArray();
+        if (tintStrengts == null) tintStrengts = layers.Select(x => x.tintStrength).ToArray();
+        if (textureScales == null) textureScales = layers.Select(x => x.textureScale).ToArray();
+        if (textures == null) textures = GenerateTextureArray(layers.Select(x => x.texture).ToArray()); ;
+
+
+        material.SetInt ("layerCount", layers.Length);
+		material.SetColorArray ("baseColours", tints);
+		material.SetFloatArray ("baseStartHeights", startHeights);
+		material.SetFloatArray ("baseBlends", blendStrengths);
+		material.SetFloatArray ("baseColourStrength", tintStrengts);
+		material.SetFloatArray ("baseTextureScales", textureScales);
+		material.SetTexture ("baseTextures", textures);
 
 		UpdateMeshHeights (material, savedMinHeight, savedMaxHeight);
 	}

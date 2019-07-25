@@ -14,9 +14,7 @@ public class TerrainGenerator : MonoBehaviour {
 
 	public Material mapMaterial;
 
-
-	float meshWorldSize;
-	int chunksVisibleInViewDst;
+	public int terrainSize = 4;
 
     public int lod;
 
@@ -26,17 +24,16 @@ public class TerrainGenerator : MonoBehaviour {
 
 		textureSettings.ApplyToMaterial (mapMaterial);
 		textureSettings.UpdateMeshHeights (mapMaterial, heightMapSettings.minHeight, heightMapSettings.maxHeight);
-		meshWorldSize = meshSettings.meshWorldSize;
-		chunksVisibleInViewDst = 4;
-
-        int currentChunkCoordX = Mathf.RoundToInt(transform.position.x / meshWorldSize);
-        int currentChunkCoordY = Mathf.RoundToInt(transform.position.y / meshWorldSize);
 
 
+        int currentChunkCoordX = Mathf.RoundToInt(transform.position.x / meshSettings.meshWorldSize);
+        int currentChunkCoordY = Mathf.RoundToInt(transform.position.y / meshSettings.meshWorldSize);
 
-        for (int yOffset = -chunksVisibleInViewDst; yOffset <= chunksVisibleInViewDst; yOffset++)
+
+
+        for (int yOffset = -terrainSize; yOffset <= terrainSize; yOffset++)
         {
-            for (int xOffset = -chunksVisibleInViewDst; xOffset <= chunksVisibleInViewDst; xOffset++)
+            for (int xOffset = -terrainSize; xOffset <= terrainSize; xOffset++)
             {
                 Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
 
@@ -47,9 +44,10 @@ public class TerrainGenerator : MonoBehaviour {
                 newChunk.Load();
             }
         }
+
     }
 
-	void Update() {
+    void Update() {
         float distance = CameraManager.Instance.distance;
 
         int detailLevel = 0;
@@ -76,8 +74,11 @@ public class TerrainGenerator : MonoBehaviour {
                 it.Current.Value.UpdateTerrainChunk(lod);
             }
         }
+
+        textureSettings.ApplyToMaterial(mapMaterial);
+        textureSettings.UpdateMeshHeights(mapMaterial, heightMapSettings.minHeight, heightMapSettings.maxHeight);
     }
-		
+
 }
 
 [System.Serializable]
