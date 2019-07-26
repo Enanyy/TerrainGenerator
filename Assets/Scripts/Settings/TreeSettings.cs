@@ -17,6 +17,7 @@ public class TreeSettings : UpdatableData
         public float maxHeight;
 
         public int seed = 0;
+        public float range = 2;
     }
     
     public TreeLayer[] trees;

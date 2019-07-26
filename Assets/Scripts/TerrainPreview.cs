@@ -153,7 +153,7 @@ public class TerrainPreview : MonoBehaviour
                         float x = i * meshSettings.meshScale - meshSettings.meshWorldSize / 2;
                         float z = -j * meshSettings.meshScale + meshSettings.meshWorldSize / 2;
 
-                        Vector2 r = Random.insideUnitCircle *2;
+                        Vector2 r = Random.insideUnitCircle * layer.range;
 
                         Vector3 position = new Vector3(x + r.x, y, z + r.y);
 
