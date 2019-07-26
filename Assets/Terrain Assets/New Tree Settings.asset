@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d492cceb17fcde34aa5dd4ac30516ec9, type: 3}
+  m_Name: New Tree Settings
+  m_EditorClassIdentifier: 
+  autoUpdate: 1
+  distance: 2
+  trees:
+  - tree: {fileID: 1064475714788088, guid: 46812e5f837a6a94ebdca41051c88a6a, type: 2}
+    minHeight: 0.25
+    maxHeight: 4

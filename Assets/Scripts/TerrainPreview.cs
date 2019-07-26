@@ -20,10 +20,12 @@ public class TerrainPreview : MonoBehaviour
 
     public MeshSettings meshSettings;
     public HeightMapSettings heightMapSettings;
-    public TextureSettings textureData;
+    public TextureSettings textureSettings;
+    public TreeSettings treeSettings;
 
     public Material terrainMaterial;
 
+    private HeightMap mHeightMap;
 
 
     [Range(0, MeshSettings.numSupportedLODs - 1)]
@@ -36,26 +38,28 @@ public class TerrainPreview : MonoBehaviour
 
     public void DrawMapInEditor()
     {
-        textureData.ApplyToMaterial(terrainMaterial);
-        textureData.UpdateMeshHeights(terrainMaterial, heightMapSettings.minHeight, heightMapSettings.maxHeight);
-        HeightMap heightMap = new HeightMap(meshSettings.numVertsPerLine, meshSettings.numVertsPerLine);
+        textureSettings.ApplyToMaterial(terrainMaterial);
+        textureSettings.UpdateMeshHeights(terrainMaterial, heightMapSettings.minHeight, heightMapSettings.maxHeight);
+        mHeightMap = new HeightMap(meshSettings.numVertsPerLine, meshSettings.numVertsPerLine);
 
         if (drawMode == DrawMode.NoiseMap)
         {
-            heightMap.GenerateHeightMap(heightMapSettings, Vector2.zero);
-            DrawTexture(heightMap.GenerateTexture());
+            mHeightMap.GenerateHeightMap(heightMapSettings, Vector2.zero);
+            DrawTexture(mHeightMap.GenerateTexture());
         }
         else if (drawMode == DrawMode.Mesh)
         {
-            heightMap.GenerateHeightMap(heightMapSettings, Vector2.zero);
-            DrawMesh(heightMap.GenerateMeshData(meshSettings, editorPreviewLOD));
+            mHeightMap.GenerateHeightMap(heightMapSettings, Vector2.zero);
+            DrawMesh(mHeightMap.GenerateMeshData(meshSettings, editorPreviewLOD));
+            GenerateTree();
+
         }
         else if (drawMode == DrawMode.FalloffMap)
         {
-            heightMap.minValue = 0;
-            heightMap.maxValue = 1;
-            heightMap.GenerateFalloffMap();
-            DrawTexture(heightMap.GenerateTexture());
+            mHeightMap.minValue = 0;
+            mHeightMap.maxValue = 1;
+            mHeightMap.GenerateFalloffMap();
+            DrawTexture(mHeightMap.GenerateTexture());
         }
     }
 
@@ -88,7 +92,7 @@ public class TerrainPreview : MonoBehaviour
 
     void OnTextureValuesUpdated()
     {
-        textureData.ApplyToMaterial(terrainMaterial);
+        textureSettings.ApplyToMaterial(terrainMaterial);
     }
 
     void OnValidate()
@@ -105,16 +109,57 @@ public class TerrainPreview : MonoBehaviour
             heightMapSettings.OnValuesUpdated += OnValuesUpdated;
         }
 
-        if (textureData != null)
+        if (textureSettings != null)
         {
-            textureData.OnValuesUpdated -= OnTextureValuesUpdated;
-            textureData.OnValuesUpdated += OnTextureValuesUpdated;
+            textureSettings.OnValuesUpdated -= OnTextureValuesUpdated;
+            textureSettings.OnValuesUpdated += OnTextureValuesUpdated;
+        }
+
+        if (treeSettings != null)
+        {
+            treeSettings.OnValuesUpdated -= OnValuesUpdated;
+            treeSettings.OnValuesUpdated += OnValuesUpdated;
         }
 
     }
 
-    public void GenerateTree()
+    private void GenerateTree()
     {
+        int count = meshRenderer.transform.childCount;
+        for (int i = count-1; i >=0; i--)
+        {
+            var child = meshRenderer.transform.GetChild(i);
+            if (child != null)
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
 
+        for (int k = 0; k < treeSettings.trees.Length; k++)
+        {
+
+            var layer = treeSettings.trees[k];
+
+            for (int i = 0; i < mHeightMap.width; i += treeSettings.distance)
+            {
+                for (int j = 0; j < mHeightMap.height; j += treeSettings.distance)
+                {
+                    float y = mHeightMap.values[i, j];
+
+                    if (y > layer.minHeight && y < layer.maxHeight)
+                    {
+
+                        float x = i * meshSettings.meshScale - meshSettings.meshWorldSize / 2;
+                        float z = -j * meshSettings.meshScale + meshSettings.meshWorldSize / 2;
+
+                        Vector3 position = new Vector3(x, y, z);
+
+                        GameObject go = Instantiate(layer.tree);
+                        go.transform.SetParent(meshRenderer.transform);
+                        go.transform.localPosition = position;
+                    }
+                }
+            }
+        }
     }
 }

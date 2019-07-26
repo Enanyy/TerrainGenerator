@@ -17,10 +17,5 @@ public class TerrainPreviewEditor : Editor {
 		if (GUILayout.Button ("Generate")) {
 			mapPreview.DrawMapInEditor ();
 		}
-
-        if (GUILayout.Button("Generate Tree"))
-        {
-            mapPreview.GenerateTree();
-        }
 	}
 }
