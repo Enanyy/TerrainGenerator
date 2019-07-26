@@ -4,14 +4,14 @@ using System.Collections;
 
 public class MeshData
 {
-    public Vector3[] vertices;
-    public int[] triangles;
-    public Vector2[] uvs;
-    Vector3[] bakedNormals;
+    private Vector3[] vertices;
+    private int[] triangles;
+    private Vector2[] uvs;
+    private Vector3[] bakedNormals;
 
-    int triangleIndex;
+    private int triangleIndex;
 
-    bool useFlatShading;
+    private bool useFlatShading;
 
     public MeshData(int meshWidth, int meshHeight, bool useFlatShading)
     {
@@ -19,6 +19,12 @@ public class MeshData
         vertices = new Vector3[meshWidth * meshHeight];
         uvs = new Vector2[meshWidth * meshHeight];
         triangles = new int[(meshWidth - 1) * (meshHeight - 1) * 6];
+    }
+
+    public void AddVertice(int index, Vector3 vertice, Vector2 uv)
+    {
+        vertices[index] = vertice;
+        uvs[index] = uv;
     }
 
     public void AddTriangle(int a, int b, int c)

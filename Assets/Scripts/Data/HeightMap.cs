@@ -167,9 +167,11 @@ public class HeightMap
 
                 float heightY = values[x, y];
 
-                meshData.vertices[vertexIndex] = new Vector3((topLeftX + x) * meshSettings.meshScale, heightY,
+                Vector3 vertice = new Vector3((topLeftX + x) * meshSettings.meshScale, heightY,
                     (topLeftZ - y) * meshSettings.meshScale);
-                meshData.uvs[vertexIndex] = new Vector2(x / (float)width, y / (float)height);
+                Vector2 uv = new Vector2(x / (float)width, y / (float)height);
+
+                meshData.AddVertice(vertexIndex, vertice, uv);
 
                 if (x < width - 1 && y < height - 1)
                 {
