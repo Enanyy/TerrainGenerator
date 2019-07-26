@@ -43,7 +43,7 @@ public class TerrainPreview : MonoBehaviour
         if (drawMode == DrawMode.NoiseMap)
         {
             heightMap.GenerateHeightMap(heightMapSettings, Vector2.zero);
-            DrawTexture(TextureGenerator.TextureFromHeightMap(heightMap));
+            DrawTexture(heightMap.GenerateTexture());
         }
         else if (drawMode == DrawMode.Mesh)
         {
@@ -55,7 +55,7 @@ public class TerrainPreview : MonoBehaviour
             heightMap.minValue = 0;
             heightMap.maxValue = 1;
             heightMap.GenerateFalloffMap();
-            DrawTexture(TextureGenerator.TextureFromHeightMap(heightMap));
+            DrawTexture(heightMap.GenerateTexture());
         }
     }
 
