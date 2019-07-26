@@ -18,6 +18,27 @@ public class TreeSettings : UpdatableData
 
         public int seed = 0;
         public float range = 2;
+
+        private Queue<GameObject> mCacheTrees = new Queue<GameObject>();
+        public GameObject InstantiateTree()
+        {
+            GameObject go = null;
+            if(mCacheTrees.Count > 0)
+            {
+                go = mCacheTrees.Dequeue();
+            }else
+            {
+                go = Instantiate(tree);
+            }
+            go.SetActive(true);
+            return go;
+        }
+        public void ReturnTree(GameObject go)
+        {
+            go.transform.SetParent(null);
+            go.SetActive(false);
+            mCacheTrees.Enqueue(go);
+        }
     }
     
     public TreeLayer[] trees;

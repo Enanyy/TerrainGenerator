@@ -10,6 +10,7 @@ public class TerrainGenerator : MonoBehaviour {
 	public MeshSettings meshSettings;
 	public HeightMapSettings heightMapSettings;
 	public TextureSettings textureSettings;
+    public TreeSettings treeSettings;
 
 
 	public Material material;
@@ -84,7 +85,7 @@ public class TerrainGenerator : MonoBehaviour {
                     }
                     else
                     {
-                        chunk = new TerrainChunk(this, coord, heightMapSettings, meshSettings, detailLevels);
+                        chunk = new TerrainChunk(this, coord);
                     }
 
                     mTerrainChunkDic2.Add(coord, chunk);

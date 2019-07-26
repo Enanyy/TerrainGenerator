@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-public class TerrainChunk {
-	
-
+public class TerrainChunk
+{
 	public Vector2 coord;
 	 
 	private GameObject mMeshObject;
@@ -17,24 +17,21 @@ public class TerrainChunk {
     private HeightMap mHeightMap;
     private bool mRequestingHeightMap;
 
-    private HeightMapSettings mHeightMapSettings;
-    private MeshSettings mMeshSettings;
-
     private TerrainGenerator mTerrain;
 
-	public TerrainChunk(TerrainGenerator terrain, Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels)
+    private Dictionary<TreeSettings.TreeLayer, List<GameObject>> mTrees = new Dictionary<TreeSettings.TreeLayer, List<GameObject>>();
+
+	public TerrainChunk(TerrainGenerator terrain, Vector2 coord)
     {
         this.mTerrain = terrain;
 
-		this.mHeightMapSettings = heightMapSettings;
-		this.mMeshSettings = meshSettings;
-        this.mHeightMap = new HeightMap(mMeshSettings.numVertsPerLine,mMeshSettings.numVertsPerLine);
+        this.mHeightMap = new HeightMap(mTerrain.meshSettings.numVertsPerLine, mTerrain.meshSettings.numVertsPerLine);
 
         SetCoord(coord);
 
-		mLODMeshes = new LODMesh[detailLevels.Length];
-		for (int i = 0; i < detailLevels.Length; i++) {
-			mLODMeshes[i] = new LODMesh(detailLevels[i].lod);
+		mLODMeshes = new LODMesh[terrain.detailLevels.Length];
+		for (int i = 0; i < terrain.detailLevels.Length; i++) {
+			mLODMeshes[i] = new LODMesh(terrain.detailLevels[i].lod);
             mLODMeshes[i].updateCallback += UpdateTerrainChunk;
         }
 	}
@@ -43,8 +40,8 @@ public class TerrainChunk {
     {
         this.coord = coord;
 
-        mSampleCenter = coord * mMeshSettings.meshWorldSize / mMeshSettings.meshScale;
-        Vector2 position = coord * mMeshSettings.meshWorldSize;
+        mSampleCenter = coord * mTerrain.meshSettings.meshWorldSize / mTerrain.meshSettings.meshScale;
+        Vector2 position = coord * mTerrain.meshSettings.meshWorldSize;
 
         if (mMeshObject == null)
         {
@@ -73,7 +70,7 @@ public class TerrainChunk {
         if (mRequestingHeightMap == false)
         {
             mRequestingHeightMap = true;
-            ThreadQueue.DoAction(()=>mHeightMap.GenerateHeightMap(mHeightMapSettings,mSampleCenter),OnHeightMapReceived);
+            ThreadQueue.DoAction(()=>mHeightMap.GenerateHeightMap(mTerrain.heightMapSettings, mSampleCenter),OnHeightMapReceived);
         }
     }
 
@@ -103,10 +100,11 @@ public class TerrainChunk {
             if (lodMesh.mesh != null && lodMesh.sampleCenter == mHeightMap.sampleCenter)
             {
                 mMeshFilter.mesh = lodMesh.mesh;
+                GenerateTree();
             }
             else
             {
-                lodMesh.GenerateMesh(mHeightMap, mMeshSettings);
+                lodMesh.GenerateMesh(mHeightMap, mTerrain.meshSettings);
             }
         }
         else
@@ -118,6 +116,70 @@ public class TerrainChunk {
     public void SetActive(bool active)
     {
         mMeshRenderer.enabled = active;
+        if(active == false)
+        {
+            HideTree();
+        }
+    }
+
+
+    private void HideTree()
+    {
+        var it = mTrees.GetEnumerator();
+        while (it.MoveNext())
+        {
+            var list = it.Current.Value;
+            for (int i = 0; i < list.Count; ++i)
+            {
+                it.Current.Key.ReturnTree(list[i]);
+            }
+            list.Clear();
+        }
+
+    }
+
+    private void GenerateTree()
+    {
+        HideTree();
+
+
+        for (int k = 0; k < mTerrain.treeSettings.trees.Length; k++)
+        {
+            var layer = mTerrain.treeSettings.trees[k];
+
+            Random.InitState(layer.seed);
+
+            for (int i = 0; i < mHeightMap.width; i += Random.Range(1, layer.distance))
+            {
+                for (int j = 0; j < mHeightMap.height; j += Random.Range(1, layer.distance))
+                {
+                    float y = mHeightMap.values[i, j];
+
+                    if (y > layer.minHeight && y < layer.maxHeight)
+                    {
+
+                        float x = i * mTerrain.meshSettings.meshScale - mTerrain.meshSettings.meshWorldSize / 2;
+                        float z = -j * mTerrain.meshSettings.meshScale + mTerrain.meshSettings.meshWorldSize / 2;
+
+                        Vector2 r = Random.insideUnitCircle * layer.range;
+
+                        Vector3 position = new Vector3(x + r.x, y, z + r.y);
+
+                        GameObject go = layer.InstantiateTree();
+                        go.transform.SetParent(mMeshObject.transform);
+                        go.transform.localPosition = position;
+
+                        go.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+
+                        if(mTrees.ContainsKey(layer) ==false)
+                        {
+                            mTrees.Add(layer, new List<GameObject>());
+                        }
+                        mTrees[layer].Add(go);
+                    }
+                }
+            }
+        }
     }
 }
 

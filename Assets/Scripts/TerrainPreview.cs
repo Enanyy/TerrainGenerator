@@ -157,9 +157,13 @@ public class TerrainPreview : MonoBehaviour
 
                         Vector3 position = new Vector3(x + r.x, y, z + r.y);
 
+
+
                         GameObject go = Instantiate(layer.tree);
                         go.transform.SetParent(meshRenderer.transform);
                         go.transform.localPosition = position;
+
+                        go.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
                     }
                 }
             }
