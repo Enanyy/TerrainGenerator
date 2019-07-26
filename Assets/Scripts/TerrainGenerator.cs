@@ -53,7 +53,7 @@ public class TerrainGenerator : MonoBehaviour {
 
         //terrainSizeY = chunkSize / 2 + 2;
 
-        terrainSizeY = terrainSizeX;//- (terrainSizeX - 1) / 2;
+        terrainSizeY = terrainSizeX - (terrainSizeX - 1) / 2;
 
         Vector3 center = CameraManager.Instance.center;
 
