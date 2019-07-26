@@ -16,8 +16,6 @@ public static class ThreadQueue  {
             }
         };
 
-        //ThreadPool.QueueUserWorkItem(thread);
-
 		new Thread (thread).Start ();
 	}
 
@@ -34,18 +32,18 @@ public static class ThreadQueue  {
                 threadQueue.Enqueue(new ThreadAction(callback));
             }
         };
-        //ThreadPool.QueueUserWorkItem(thread);
+
         new Thread(thread).Start();
 
     }
 
     public static void Update()
     {
-        if (threadQueue.Count > 0)
+        while (threadQueue.Count > 0)
         {
-            for (int i = 0; i < threadQueue.Count; i++)
+            var thread = threadQueue.Dequeue();
+            if (thread != null)
             {
-                IThread thread = threadQueue.Dequeue();
                 thread.Invoke();
             }
         }

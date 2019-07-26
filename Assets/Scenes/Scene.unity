@@ -113,7 +113,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!43 &481012958
+--- !u!43 &262596249
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -327,7 +327,7 @@ MeshFilter:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 522957207}
-  m_Mesh: {fileID: 481012958}
+  m_Mesh: {fileID: 262596249}
 --- !u!4 &522957210
 Transform:
   m_ObjectHideFlags: 0
@@ -526,6 +526,7 @@ MonoBehaviour:
   textureSettings: {fileID: 11400000, guid: 8f04123bfc8576046a813c9ea085a582, type: 2}
   material: {fileID: 2100000, guid: b0872f84cf3c7441d893168677410c73, type: 2}
   terrainSizeX: 4
+  terrainSizeY: 4
   lod: 0
 --- !u!1 &1711656484
 GameObject:
@@ -702,7 +703,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minDistance: 50
-  maxDistance: 800
+  maxDistance: 1000
   scrollSpeed: 100
   distance: 148.37903
   rendering: 1

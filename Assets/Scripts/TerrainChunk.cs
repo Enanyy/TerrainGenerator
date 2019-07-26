@@ -63,6 +63,7 @@ public class TerrainChunk {
 
         if (mHeightMap.sampleCenter != mSampleCenter)
         {
+            mMeshFilter.mesh = null;
             Load();
         }
     }

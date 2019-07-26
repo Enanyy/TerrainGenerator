@@ -15,6 +15,7 @@ public class TerrainGenerator : MonoBehaviour {
 	public Material material;
 
 	public int terrainSizeX = 4;
+    public int terrainSizeY = 4;
 
     public int lod;
 
@@ -44,7 +45,16 @@ public class TerrainGenerator : MonoBehaviour {
         if (distance % meshSettings.meshWorldSize > 0) chunkSize++;
 
         terrainSizeX = chunkSize / 2 + 1;
-        
+
+        //distance = Mathf.Abs(CameraManager.Instance.leftTop.z - CameraManager.Instance.leftBottom.z);
+
+        //chunkSize = (int)(distance / meshSettings.meshWorldSize);
+        //if (distance % meshSettings.meshWorldSize > 0) chunkSize++;
+
+        //terrainSizeY = chunkSize / 2 + 2;
+
+        terrainSizeY = terrainSizeX;//- (terrainSizeX - 1) / 2;
+
         Vector3 center = CameraManager.Instance.center;
 
         int currentChunkCoordX = Mathf.RoundToInt(center.x / meshSettings.meshWorldSize);
@@ -52,7 +62,7 @@ public class TerrainGenerator : MonoBehaviour {
 
         mTerrainChunkDic2.Clear();
 
-        for (int yOffset = -terrainSizeX; yOffset <= terrainSizeX; yOffset++)
+        for (int yOffset = -terrainSizeY; yOffset <= terrainSizeY; yOffset++)
         {
             for (int xOffset = -terrainSizeX; xOffset <= terrainSizeX; xOffset++)
             {
