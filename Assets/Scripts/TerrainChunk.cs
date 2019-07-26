@@ -28,6 +28,7 @@ public class TerrainChunk {
 
 		this.mHeightMapSettings = heightMapSettings;
 		this.mMeshSettings = meshSettings;
+        this.mHeightMap = new HeightMap(mMeshSettings.numVertsPerLine,mMeshSettings.numVertsPerLine);
 
         SetCoord(coord);
 
@@ -60,7 +61,7 @@ public class TerrainChunk {
 
         mMeshObject.transform.position = new Vector3(position.x, 0, position.y);
 
-        if (mHeightMap != null && mHeightMap.sampleCenter != mSampleCenter)
+        if (mHeightMap.sampleCenter != mSampleCenter)
         {
             Load();
         }
@@ -71,40 +72,40 @@ public class TerrainChunk {
         if (mRequestingHeightMap == false)
         {
             mRequestingHeightMap = true;
-            ThreadQueue.DoFunc(
-                () => HeightMapGenerator.GenerateHeightMap(mMeshSettings.numVertsPerLine, mMeshSettings.numVertsPerLine,
-                    mHeightMapSettings, mSampleCenter), OnHeightMapReceived);
+            ThreadQueue.DoAction(()=>mHeightMap.GenerateHeightMap(mHeightMapSettings,mSampleCenter),OnHeightMapReceived);
         }
     }
 
 
 
-    void OnHeightMapReceived(object heightMapObject) {
-		this.mHeightMap = (HeightMap)heightMapObject;
+    void OnHeightMapReceived() {
+		
 		mRequestingHeightMap = false;
 
-		UpdateTerrainChunk (mTerrain.lod);
-	}
+        if (mHeightMap.sampleCenter == mSampleCenter)
+        {
+            UpdateTerrainChunk(mTerrain.lod);
+        }
+        else
+        {
+            Load();
+        }
+    }
 
 
     public void UpdateTerrainChunk(int lod)
-    {
-        if (mHeightMap == null)
-        {
-            return;
-        }
-
+    { 
         if (mHeightMap.sampleCenter == mSampleCenter)
         {
             LODMesh lodMesh = mLODMeshes[lod];
             
-            if (lodMesh.mesh != null && lodMesh.heightMap.sampleCenter == mHeightMap.sampleCenter)
+            if (lodMesh.mesh != null && lodMesh.sampleCenter == mHeightMap.sampleCenter)
             {
                 mMeshFilter.mesh = lodMesh.mesh;
             }
             else
             {
-                lodMesh.RequestMesh(mHeightMap, mMeshSettings);
+                lodMesh.GenerateMesh(mHeightMap, mMeshSettings);
             }
         }
         else
@@ -121,7 +122,7 @@ public class TerrainChunk {
 
 class LODMesh
 {
-    public HeightMap heightMap;
+    public Vector2 sampleCenter;
     public Mesh mesh;
     private bool mRequestingMesh;
 
@@ -140,16 +141,13 @@ class LODMesh
 		updateCallback (lod);
 	}
 
-    public void RequestMesh(HeightMap heightMap, MeshSettings meshSettings)
+    public void GenerateMesh(HeightMap heightMap, MeshSettings meshSettings)
     {
-        if (mRequestingMesh == false 
-            || this.heightMap == null                        
-            || this.heightMap.sampleCenter != heightMap.sampleCenter)
+        if (mRequestingMesh == false || sampleCenter != heightMap.sampleCenter)
         {
-            this.heightMap = heightMap;
+            sampleCenter = heightMap.sampleCenter;
             mRequestingMesh = true;
-            ThreadQueue.DoFunc(() => MeshGenerator.GenerateTerrainMesh(heightMap.values, meshSettings, lod), OnMeshDataReceived);
+            ThreadQueue.DoFunc(() => heightMap.GenerateMeshData(meshSettings,lod), OnMeshDataReceived);
         }
     }
-
 }

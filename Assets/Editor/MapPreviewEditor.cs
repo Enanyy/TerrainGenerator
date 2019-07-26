@@ -2,11 +2,11 @@
 using System.Collections;
 using UnityEditor;
 
-[CustomEditor (typeof (MapPreview))]
+[CustomEditor (typeof (TerrainPreview))]
 public class MapPreviewEditor : Editor {
 
 	public override void OnInspectorGUI() {
-		MapPreview mapPreview = (MapPreview)target;
+		TerrainPreview mapPreview = (TerrainPreview)target;
 
 		if (DrawDefaultInspector ()) {
 			if (mapPreview.autoUpdate) {

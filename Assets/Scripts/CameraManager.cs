@@ -128,6 +128,15 @@ public class CameraManager : MonoBehaviour
         {
             return;
         }
+
+        Vector3 mousePosition = Input.mousePosition;
+        if (mousePosition.x < 0 
+            || mousePosition.x > Screen.width 
+            || mousePosition.y < 0 
+            || mousePosition.y > Screen.height)
+        {
+            return;
+        }
         // 鼠标滚轮触发缩放
         float scroll = Input.GetAxis("Mouse ScrollWheel");
 
