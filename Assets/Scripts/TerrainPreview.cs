@@ -137,12 +137,13 @@ public class TerrainPreview : MonoBehaviour
 
         for (int k = 0; k < treeSettings.trees.Length; k++)
         {
-
             var layer = treeSettings.trees[k];
 
-            for (int i = 0; i < mHeightMap.width; i += treeSettings.distance)
+            Random.InitState(layer.seed);
+
+            for (int i = 0; i < mHeightMap.width; i += Random.Range( 1, layer.distance))
             {
-                for (int j = 0; j < mHeightMap.height; j += treeSettings.distance)
+                for (int j = 0; j < mHeightMap.height; j += Random.Range(1, layer.distance))
                 {
                     float y = mHeightMap.values[i, j];
 
@@ -152,7 +153,9 @@ public class TerrainPreview : MonoBehaviour
                         float x = i * meshSettings.meshScale - meshSettings.meshWorldSize / 2;
                         float z = -j * meshSettings.meshScale + meshSettings.meshWorldSize / 2;
 
-                        Vector3 position = new Vector3(x, y, z);
+                        Vector2 r = Random.insideUnitCircle *2;
+
+                        Vector3 position = new Vector3(x + r.x, y, z + r.y);
 
                         GameObject go = Instantiate(layer.tree);
                         go.transform.SetParent(meshRenderer.transform);

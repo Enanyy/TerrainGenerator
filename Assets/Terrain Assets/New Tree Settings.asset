@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Name: New Tree Settings
   m_EditorClassIdentifier: 
   autoUpdate: 1
-  distance: 2
   trees:
-  - tree: {fileID: 1064475714788088, guid: 46812e5f837a6a94ebdca41051c88a6a, type: 2}
+  - distance: 4
+    tree: {fileID: 1064475714788088, guid: 46812e5f837a6a94ebdca41051c88a6a, type: 2}
     minHeight: 0.25
-    maxHeight: 4
+    maxHeight: 5
+    seed: 0
