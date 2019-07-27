@@ -160,12 +160,15 @@ public class TerrainChunk
 
                         float scale = Random.Range(layer.minScale, layer.maxScale);
                         if (scale >= current)
-                        { 
+                        {
                             if (mTreeMatrix4x4s.ContainsKey(layer) == false)
                             {
                                 mTreeMatrix4x4s.Add(layer, new List<Matrix4x4>());
                             }
-                            mTreeMatrix4x4s[layer].Add(Matrix4x4.TRS(position, rotation, Vector3.one * scale));
+                            if (mTreeMatrix4x4s[layer].Count < 1023)
+                            {
+                                mTreeMatrix4x4s[layer].Add(Matrix4x4.TRS(position, rotation, Vector3.one * scale));
+                            }
                         }
                     }
                 }
