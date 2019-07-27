@@ -133,7 +133,8 @@ public class TerrainChunk
         {
             var layer = mTerrain.treeSettings.trees[k];
 
-            float step = (layer.maxScale - layer.minScale) / (mLODMeshes.Length - 1);
+            float step = (layer.maxScale - layer.minScale) / mLODMeshes.Length ;
+            float current = layer.minScale + lod * step * (1 + 1f / mLODMeshes.Length);
 
             Random.InitState(layer.seed);
 
@@ -158,7 +159,7 @@ public class TerrainChunk
                         var rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
 
                         float scale = Random.Range(layer.minScale, layer.maxScale);
-                        if (scale >= (layer.minScale + lod * step))
+                        if (scale >= current)
                         { 
                             if (mTreeMatrix4x4s.ContainsKey(layer) == false)
                             {

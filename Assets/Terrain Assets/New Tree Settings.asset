@@ -14,20 +14,29 @@ MonoBehaviour:
   autoUpdate: 1
   trees:
   - distance: 5
-    mesh: {fileID: 4300000, guid: 1e50ef3048667495d90210b70c070c6b, type: 3}
-    material: {fileID: 2100000, guid: af65c0942482e46aeb256506726ff0f7, type: 2}
+    mesh: {fileID: 4300000, guid: fa9c2840c04722d4ebdc29f0066d6903, type: 3}
+    material: {fileID: 2100000, guid: 3ac234b2daff169459970c6d92b5fd1d, type: 2}
     minHeight: 0.25
-    maxHeight: 3
+    maxHeight: 2
     seed: 0
     range: 2
-    minScale: 0.3
-    maxScale: 5
+    minScale: 50
+    maxScale: 100
   - distance: 5
-    mesh: {fileID: 4300000, guid: d7ad634caa1c049d49b730cc6d29c683, type: 3}
-    material: {fileID: 2100000, guid: af65c0942482e46aeb256506726ff0f7, type: 2}
-    minHeight: 3
+    mesh: {fileID: 4300000, guid: 6384b2ff09099174cb9f6dffb22aa418, type: 3}
+    material: {fileID: 2100000, guid: 3a7d2ba733afab54485a6e0562cd8bf8, type: 2}
+    minHeight: 2
+    maxHeight: 3.5
+    seed: 0
+    range: 2
+    minScale: 50
+    maxScale: 100
+  - distance: 5
+    mesh: {fileID: 4300000, guid: 9fdb226b58d6893478ca58b765ec773d, type: 3}
+    material: {fileID: 2100000, guid: 23745abd50dd2a54ba7f221047064b2a, type: 2}
+    minHeight: 3.5
     maxHeight: 5
     seed: 0
     range: 2
-    minScale: 0.3
-    maxScale: 5
+    minScale: 50
+    maxScale: 100

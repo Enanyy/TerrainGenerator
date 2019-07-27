@@ -142,6 +142,7 @@ public class TerrainPreview : MonoBehaviour
             var layer = treeSettings.trees[k];
 
             float step = (layer.maxScale - layer.minScale) / LODSettings.numSupportedLODs;
+            float current = layer.minScale + editorPreviewLOD * step * (1 + 1f / LODSettings.numSupportedLODs);
 
             Random.InitState(layer.seed);
 
@@ -162,7 +163,7 @@ public class TerrainPreview : MonoBehaviour
                         Vector3 position = new Vector3(x + r.x, y, z + r.y);
 
                         float scale = Random.Range(layer.minScale, layer.maxScale);
-                        if (scale >= (layer.minScale + editorPreviewLOD * step))
+                        if (scale >= current)
                         {
 
                             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -171,7 +172,7 @@ public class TerrainPreview : MonoBehaviour
                             go.transform.localPosition = position;
 
                             go.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
-                            go.transform.localScale = Vector3.one * scale;
+                           // go.transform.localScale = Vector3.one * scale;
                         }
                     }
                 }
