@@ -62,7 +62,7 @@ public class TerrainGenerator : MonoBehaviour {
 
         mTerrainChunkDic2.Clear();
 
-        for (int yOffset = -terrainSizeY; yOffset <= terrainSizeY; yOffset++)
+        for (int yOffset = terrainSizeY < 2 ? -terrainSizeY : -terrainSizeY + 1; yOffset <= terrainSizeY; yOffset++)
         {
             for (int xOffset = -terrainSizeX; xOffset <= terrainSizeX; xOffset++)
             {
@@ -71,8 +71,8 @@ public class TerrainGenerator : MonoBehaviour {
                 mTerrainChunkDic.TryGetValue(coord, out chunk);
                 if (chunk != null)
                 {
-                   mTerrainChunkDic2.Add(coord, chunk);
-                   mTerrainChunkDic.Remove(coord);
+                    mTerrainChunkDic2.Add(coord, chunk);
+                    mTerrainChunkDic.Remove(coord);
                 }
                 else
                 {

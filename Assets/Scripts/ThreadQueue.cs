@@ -6,13 +6,25 @@ public static class ThreadQueue  {
 
 	static Queue<IThread> threadQueue = new Queue<IThread>();
    
-	public static void DoFunc(Func<object> func, Action<object> callback) {
+	public static void DoFunc(Func<object> func, Action<object> callback)
+    {
         ThreadStart thread = delegate() {
-
-            object data = func();
+            object data = null;
+            Exception exception = null;
+            try
+            {
+                if (func != null)
+                {
+                    data = func();
+                }
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
             lock (threadQueue)
             {
-                threadQueue.Enqueue(new ThreadFunc(callback, data));
+                threadQueue.Enqueue(new ThreadFunc(callback, data, exception));
             }
         };
 
@@ -22,14 +34,22 @@ public static class ThreadQueue  {
     public static void DoAction(Action func, Action callback)
     {
         ThreadStart thread = delegate () {
-
-            if (func != null)
+            Exception exception = null;
+            try
             {
-                func();
+                if (func != null)
+                {
+                    func();
+                }
             }
+            catch(Exception e)
+            {
+                exception = e;
+            }
+            
             lock (threadQueue)
             {
-                threadQueue.Enqueue(new ThreadAction(callback));
+                threadQueue.Enqueue(new ThreadAction(callback, exception));
             }
         };
 
@@ -44,24 +64,35 @@ public static class ThreadQueue  {
             var thread = threadQueue.Dequeue();
             if (thread != null)
             {
-                thread.Invoke();
+                if (thread.exception == null)
+                {
+                    thread.OnCompleted();
+                }
+                else
+                {
+                    UnityEngine.Debug.LogError(thread.exception);
+                }
             }
         }
     }
 
     interface IThread
     {
-        void Invoke();
+        Exception exception { get; }
+        void OnCompleted();
+
     }
     class ThreadAction : IThread
     {
+        public Exception exception { get; private set; }
         public readonly Action callback;
-        public ThreadAction(Action callback)
+        public ThreadAction(Action callback,Exception exception)
         {
             this.callback = callback;
+            this.exception = exception;
         }
 
-        public void Invoke()
+        public void OnCompleted()
         {
             if(callback!=null)
             {
@@ -73,16 +104,19 @@ public static class ThreadQueue  {
    
     class ThreadFunc:IThread
     {
-		public readonly Action<object> callback;
+        public Exception exception { get; private set; }
+
+        public readonly Action<object> callback;
 		public readonly object data;
 
-		public ThreadFunc (Action<object> callback, object data)
+		public ThreadFunc (Action<object> callback, object data, Exception exception)
 		{
 			this.callback = callback;
 			this.data = data;
+            this.exception = exception;
 		}
 
-        public void Invoke()
+        public void OnCompleted()
         {
             if(callback!= null)
             {
