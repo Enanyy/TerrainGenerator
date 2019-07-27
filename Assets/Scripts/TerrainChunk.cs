@@ -20,7 +20,8 @@ public class TerrainChunk
     private TerrainGenerator mTerrain;
 
     private Dictionary<TreeSettings.TreeLayer, List<Matrix4x4>> mTreeMatrix4x4s = new Dictionary<TreeSettings.TreeLayer, List<Matrix4x4>>();
-    
+
+    private bool mGeneratingTree;
 	public TerrainChunk(TerrainGenerator terrain, Vector2 coord)
     {
         this.mTerrain = terrain;
@@ -100,7 +101,10 @@ public class TerrainChunk
             if (lodMesh.mesh != null && lodMesh.sampleCenter == mHeightMap.sampleCenter)
             {
                 mMeshFilter.mesh = lodMesh.mesh;
-                GenerateTree(lod);
+
+                var matrix4x4 = mMeshObject.transform.localToWorldMatrix;
+
+                ThreadQueue.DoAction(()=> GenerateTree(matrix4x4, lod), null);
             }
             else
             {
@@ -120,10 +124,10 @@ public class TerrainChunk
     }
 
    
-   
-
-    private void GenerateTree(int lod)
+    private void GenerateTree(Matrix4x4 matrix4X4, int lod)
     {
+        mGeneratingTree = true;
+
         var it = mTreeMatrix4x4s.GetEnumerator();
         while(it.MoveNext())
         {
@@ -134,13 +138,14 @@ public class TerrainChunk
             var layer = mTerrain.treeSettings.trees[k];
 
             float step = (layer.maxScale - layer.minScale) / mLODMeshes.Length ;
+
             float current = layer.minScale + lod * step * (1 + 1f / mLODMeshes.Length);
 
-            Random.InitState(layer.seed);
+            System.Random random = new System.Random(layer.seed);
 
-            for (int i = 0; i < mHeightMap.width; i += Random.Range(1, layer.distance))
+            for (int i = 0; i < mHeightMap.width; i += random.Next(1, layer.distance))
             {
-                for (int j = 0; j < mHeightMap.height; j += Random.Range(1, layer.distance))
+                for (int j = 0; j < mHeightMap.height; j += random.Next(1, layer.distance))
                 {
                     float y = mHeightMap.values[i, j];
 
@@ -150,15 +155,17 @@ public class TerrainChunk
                         float x = i * mTerrain.meshSettings.meshScale - mTerrain.meshSettings.meshWorldSize / 2;
                         float z = -j * mTerrain.meshSettings.meshScale + mTerrain.meshSettings.meshWorldSize / 2;
 
-                        Vector2 r = Random.insideUnitCircle * layer.range;
+                        float rx = random.Next(0, 100) / 100f;
+                        float ry = random.Next(0, 100) / 100f;
 
-                        Vector3 position = new Vector3(x + r.x, y, z + r.y);
+                        Vector4 v4 = new Vector4(x + rx, y, z + ry, 1);
+                        v4 = matrix4X4 * v4;
 
-                        position = mMeshObject.transform.TransformPoint(position);
+                        Vector3 position = new Vector3(v4.x,v4.y,v4.z);
 
-                        var rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+                        var rotation = Quaternion.Euler(0, random.Next(0, 360), 0);
 
-                        float scale = Random.Range(layer.minScale, layer.maxScale);
+                        float scale = random.Next((int)(layer.minScale * 100), (int)(layer.maxScale * 100)) / 100f;
                         if (scale >= current)
                         {
                             if (mTreeMatrix4x4s.ContainsKey(layer) == false)
@@ -174,11 +181,13 @@ public class TerrainChunk
                 }
             }
         }
+
+        mGeneratingTree = false;
     }
 
     public void Update()
     {
-        if(mMeshRenderer.enabled)
+        if(mMeshRenderer.enabled && mGeneratingTree == false)
         {
             var it = mTreeMatrix4x4s.GetEnumerator();
             while(it.MoveNext())
