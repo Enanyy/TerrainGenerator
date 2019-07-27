@@ -19,8 +19,8 @@ public class TerrainChunk
 
     private TerrainGenerator mTerrain;
 
-    private Dictionary<TreeSettings.TreeLayer, List<GameObject>> mTrees = new Dictionary<TreeSettings.TreeLayer, List<GameObject>>();
-
+    private Dictionary<TreeSettings.TreeLayer, List<Matrix4x4>> mTreeMatrix4x4s = new Dictionary<TreeSettings.TreeLayer, List<Matrix4x4>>();
+    
 	public TerrainChunk(TerrainGenerator terrain, Vector2 coord)
     {
         this.mTerrain = terrain;
@@ -29,9 +29,9 @@ public class TerrainChunk
 
         SetCoord(coord);
 
-		mLODMeshes = new LODMesh[terrain.detailLevels.Length];
-		for (int i = 0; i < terrain.detailLevels.Length; i++) {
-			mLODMeshes[i] = new LODMesh(terrain.detailLevels[i].lod);
+		mLODMeshes = new LODMesh[terrain.lodSettings.detailLevels.Length];
+		for (int i = 0; i < terrain.lodSettings.detailLevels.Length; i++) {
+			mLODMeshes[i] = new LODMesh(terrain.lodSettings.detailLevels[i].lod);
             mLODMeshes[i].updateCallback += UpdateTerrainChunk;
         }
 	}
@@ -100,7 +100,7 @@ public class TerrainChunk
             if (lodMesh.mesh != null && lodMesh.sampleCenter == mHeightMap.sampleCenter)
             {
                 mMeshFilter.mesh = lodMesh.mesh;
-                GenerateTree();
+                GenerateTree(lod);
             }
             else
             {
@@ -116,36 +116,24 @@ public class TerrainChunk
     public void SetActive(bool active)
     {
         mMeshRenderer.enabled = active;
-        if(active == false)
-        {
-            HideTree();
-        }
+       
     }
 
+   
+   
 
-    private void HideTree()
+    private void GenerateTree(int lod)
     {
-        var it = mTrees.GetEnumerator();
-        while (it.MoveNext())
+        var it = mTreeMatrix4x4s.GetEnumerator();
+        while(it.MoveNext())
         {
-            var list = it.Current.Value;
-            for (int i = 0; i < list.Count; ++i)
-            {
-                it.Current.Key.ReturnTree(list[i]);
-            }
-            list.Clear();
+            it.Current.Value.Clear();
         }
-
-    }
-
-    private void GenerateTree()
-    {
-        HideTree();
-
-
         for (int k = 0; k < mTerrain.treeSettings.trees.Length; k++)
         {
             var layer = mTerrain.treeSettings.trees[k];
+
+            float step = (layer.maxScale - layer.minScale) / (mLODMeshes.Length - 1);
 
             Random.InitState(layer.seed);
 
@@ -165,19 +153,34 @@ public class TerrainChunk
 
                         Vector3 position = new Vector3(x + r.x, y, z + r.y);
 
-                        GameObject go = layer.InstantiateTree();
-                        go.transform.SetParent(mMeshObject.transform);
-                        go.transform.localPosition = position;
+                        position = mMeshObject.transform.TransformPoint(position);
 
-                        go.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+                        var rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
 
-                        if(mTrees.ContainsKey(layer) ==false)
-                        {
-                            mTrees.Add(layer, new List<GameObject>());
+                        float scale = Random.Range(layer.minScale, layer.maxScale);
+                        if (scale >= (layer.minScale + lod * step))
+                        { 
+                            if (mTreeMatrix4x4s.ContainsKey(layer) == false)
+                            {
+                                mTreeMatrix4x4s.Add(layer, new List<Matrix4x4>());
+                            }
+                            mTreeMatrix4x4s[layer].Add(Matrix4x4.TRS(position, rotation, Vector3.one * scale));
                         }
-                        mTrees[layer].Add(go);
                     }
                 }
+            }
+        }
+    }
+
+    public void Update()
+    {
+        if(mMeshRenderer.enabled)
+        {
+            var it = mTreeMatrix4x4s.GetEnumerator();
+            while(it.MoveNext())
+            {
+
+                Graphics.DrawMeshInstanced(it.Current.Key.mesh, 0, it.Current.Key.material, it.Current.Value);
             }
         }
     }

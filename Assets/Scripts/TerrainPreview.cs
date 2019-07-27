@@ -28,7 +28,7 @@ public class TerrainPreview : MonoBehaviour
     private HeightMap mHeightMap;
 
 
-    [Range(0, MeshSettings.numSupportedLODs - 1)]
+    [Range(0, LODSettings.numSupportedLODs - 1)]
     public int editorPreviewLOD;
 
     public bool autoUpdate;
@@ -126,7 +126,7 @@ public class TerrainPreview : MonoBehaviour
     private void GenerateTree()
     {
         int count = meshRenderer.transform.childCount;
-        for (int i = count-1; i >=0; i--)
+        for (int i = count - 1; i >= 0; i--)
         {
             var child = meshRenderer.transform.GetChild(i);
             if (child != null)
@@ -135,13 +135,17 @@ public class TerrainPreview : MonoBehaviour
             }
         }
 
+
+
         for (int k = 0; k < treeSettings.trees.Length; k++)
         {
             var layer = treeSettings.trees[k];
 
+            float step = (layer.maxScale - layer.minScale) / LODSettings.numSupportedLODs;
+
             Random.InitState(layer.seed);
 
-            for (int i = 0; i < mHeightMap.width; i += Random.Range( 1, layer.distance))
+            for (int i = 0; i < mHeightMap.width; i += Random.Range(1, layer.distance))
             {
                 for (int j = 0; j < mHeightMap.height; j += Random.Range(1, layer.distance))
                 {
@@ -157,13 +161,18 @@ public class TerrainPreview : MonoBehaviour
 
                         Vector3 position = new Vector3(x + r.x, y, z + r.y);
 
+                        float scale = Random.Range(layer.minScale, layer.maxScale);
+                        if (scale >= (layer.minScale + editorPreviewLOD * step))
+                        {
 
+                            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
-                        GameObject go = Instantiate(layer.tree);
-                        go.transform.SetParent(meshRenderer.transform);
-                        go.transform.localPosition = position;
+                            go.transform.SetParent(meshRenderer.transform);
+                            go.transform.localPosition = position;
 
-                        go.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+                            go.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+                            go.transform.localScale = Vector3.one * scale;
+                        }
                     }
                 }
             }

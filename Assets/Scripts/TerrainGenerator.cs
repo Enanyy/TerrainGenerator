@@ -5,8 +5,7 @@ using System.Collections.Generic;
 public class TerrainGenerator : MonoBehaviour {
 
 
-	public LODInfo[] detailLevels;
-
+    public LODSettings lodSettings;
 	public MeshSettings meshSettings;
 	public HeightMapSettings heightMapSettings;
 	public TextureSettings textureSettings;
@@ -120,17 +119,17 @@ public class TerrainGenerator : MonoBehaviour {
 
         int detailLevel = 0;
 
-        for (int i = 0; i < detailLevels.Length; ++i)
+        for (int i = 0; i < lodSettings.detailLevels.Length; ++i)
         {
-            if (distance < detailLevels[i].distance)
+            if (distance < lodSettings.detailLevels[i].distance)
             {
                 detailLevel = i; break;
             }
         }
 
-        if (distance >= detailLevels[detailLevels.Length - 1].distance)
+        if (distance >= lodSettings.detailLevels[lodSettings.detailLevels.Length - 1].distance)
         {
-            detailLevel = detailLevels[detailLevels.Length - 1].lod;
+            detailLevel = lodSettings.detailLevels[lodSettings.detailLevels.Length - 1].lod;
         }
 
         if (detailLevel != lod)
@@ -151,14 +150,13 @@ public class TerrainGenerator : MonoBehaviour {
 
     private void Update()
     {
-
         ThreadQueue.Update();
+        var it = mTerrainChunkDic.GetEnumerator();
+        while(it.MoveNext())
+        {
+            it.Current.Value.Update();
+        }
     }
 }
 
-[System.Serializable]
-public struct LODInfo {
-	[Range(0,MeshSettings.numSupportedLODs-1)]
-	public int lod;
-	public float distance;
-}
+

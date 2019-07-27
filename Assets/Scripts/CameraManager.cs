@@ -114,9 +114,8 @@ public class CameraManager : MonoBehaviour
 
     }
     //缩放距离限制   
-
-    public float minDistance = 10;
-    public float maxDistance = 200;
+    public LODSettings lodSettings;
+ 
     public float scrollSpeed = 20;
 
     public float distance;
@@ -140,7 +139,7 @@ public class CameraManager : MonoBehaviour
         // 鼠标滚轮触发缩放
         float scroll = Input.GetAxis("Mouse ScrollWheel");
 
-        if ( (scroll < -0.001 || scroll > 0.001) ||(distance < minDistance || distance > maxDistance) )
+        if ( (scroll < -0.001 || scroll > 0.001) ||(distance < lodSettings. minDistance || distance > lodSettings.maxDistance) )
         {
             float displacement = scrollSpeed * scroll;
 
@@ -150,13 +149,13 @@ public class CameraManager : MonoBehaviour
   
             mPlane.Raycast(ray, out distance);
 
-            if (distance < minDistance)
+            if (distance < lodSettings.minDistance)
             {
-                mainCamera.transform.position = ray.GetPoint(distance - minDistance);
+                mainCamera.transform.position = ray.GetPoint(distance - lodSettings.minDistance);
             }
-            else if (distance > maxDistance)
+            else if (distance > lodSettings.maxDistance)
             {
-                mainCamera.transform.position = ray.GetPoint(distance - maxDistance);
+                mainCamera.transform.position = ray.GetPoint(distance - lodSettings.maxDistance);
             }
 
             UpdateCorner();
