@@ -83,7 +83,7 @@ public class TerrainChunk
 
         if (mHeightMap.sampleCenter == mSampleCenter)
         {
-            UpdateTerrainChunk(mTerrain.lod);
+            UpdateTerrainChunk();
         }
         else
         {
@@ -92,10 +92,12 @@ public class TerrainChunk
     }
 
 
-    public void UpdateTerrainChunk(int lod)
+    public void UpdateTerrainChunk()
     { 
         if (mHeightMap.sampleCenter == mSampleCenter)
         {
+            int lod = mTerrain.lod;
+
             LODMesh lodMesh = mLODMeshes[lod];
             
             if (lodMesh.mesh != null && lodMesh.sampleCenter == mHeightMap.sampleCenter)
@@ -187,7 +189,7 @@ public class TerrainChunk
 
     public void Update()
     {
-        if(mMeshRenderer.enabled && mGeneratingTree == false)
+        if(mTerrain.generateTree && mMeshRenderer.enabled && mGeneratingTree == false)
         {
             var it = mTreeMatrix4x4s.GetEnumerator();
             while(it.MoveNext())
@@ -206,7 +208,7 @@ class LODMesh
     private bool mRequestingMesh;
 
 	public int lod;
-	public event System.Action<int> updateCallback;
+	public event System.Action updateCallback;
 
 	public LODMesh(int lod) {
 		this.lod = lod;
@@ -217,7 +219,7 @@ class LODMesh
 		mesh = ((MeshData)meshDataObject).CreateMesh ();
         mRequestingMesh = false;
 
-		updateCallback (lod);
+		updateCallback ();
 	}
 
     public void GenerateMesh(HeightMap heightMap, MeshSettings meshSettings)

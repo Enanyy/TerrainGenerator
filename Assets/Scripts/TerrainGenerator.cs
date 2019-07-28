@@ -14,6 +14,8 @@ public class TerrainGenerator : MonoBehaviour {
 
 	public Material material;
 
+    public bool generateTree = true;
+
 	public int terrainSizeX = 4;
     public int terrainSizeY = 4;
 
@@ -138,7 +140,7 @@ public class TerrainGenerator : MonoBehaviour {
             var it = mTerrainChunkDic.GetEnumerator();
             while (it.MoveNext())
             {
-                it.Current.Value.UpdateTerrainChunk(lod);
+                it.Current.Value.UpdateTerrainChunk();
             }
         }
 
