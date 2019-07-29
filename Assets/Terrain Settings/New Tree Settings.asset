@@ -16,7 +16,7 @@ MonoBehaviour:
   - distance: 5
     mesh: {fileID: 4300000, guid: fa9c2840c04722d4ebdc29f0066d6903, type: 3}
     material: {fileID: 2100000, guid: 3ac234b2daff169459970c6d92b5fd1d, type: 2}
-    minHeight: 0.24
+    minHeight: 0.9
     maxHeight: 2
     seed: 0
     range: 2

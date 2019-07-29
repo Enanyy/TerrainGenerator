@@ -112,7 +112,7 @@ public class HeightMap
         {
             for (int j = 0; j < height; j++)
             {
-                values[i, j] *= heightCurve_threadsafe.Evaluate(values[i, j]) * settings.heightMultiplier;
+                values[i, j] = heightCurve_threadsafe.Evaluate(values[i, j]) * settings.heightMultiplier;
 
                 if (values[i, j] > maxValue)
                 {
