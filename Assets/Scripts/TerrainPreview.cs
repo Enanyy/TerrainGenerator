@@ -31,6 +31,9 @@ public class TerrainPreview : MonoBehaviour
     [Range(0, LODSettings.numSupportedLODs - 1)]
     public int editorPreviewLOD;
 
+    public bool generateTree = true;
+
+
     public bool autoUpdate;
 
 
@@ -51,7 +54,9 @@ public class TerrainPreview : MonoBehaviour
         {
             mHeightMap.GenerateHeightMap(heightMapSettings, Vector2.zero);
             DrawMesh(mHeightMap.GenerateMeshData(meshSettings, editorPreviewLOD));
-            GenerateTree();
+           
+                GenerateTree();
+            
 
         }
         else if (drawMode == DrawMode.FalloffMap)
@@ -135,7 +140,10 @@ public class TerrainPreview : MonoBehaviour
             }
         }
 
-
+        if (generateTree == false)
+        {
+            return;
+        }
 
         for (int k = 0; k < treeSettings.trees.Length; k++)
         {

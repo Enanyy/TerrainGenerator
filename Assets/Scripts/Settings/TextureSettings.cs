@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Linq;
 
 [CreateAssetMenu()]
 public class TextureSettings : UpdatableData {
@@ -16,28 +15,37 @@ public class TextureSettings : UpdatableData {
     private Color[] tints;
     private float[] startHeights;
     private float[] blendStrengths;
-    private float[] tintStrengts;
+    private float[] tintStrengths;
     private float[] textureScales;
     private Texture2DArray textures;
 
     public void ApplyToMaterial(Material material)
     {
+        if (tints == null || tints.Length != layers.Length) tints= new Color[layers.Length];
+        if (startHeights == null || startHeights.Length != layers.Length) startHeights = new float[layers.Length];
+        if (blendStrengths == null || blendStrengths.Length != layers.Length) blendStrengths = new float[layers.Length];
+        if (tintStrengths == null || tintStrengths.Length != layers.Length) tintStrengths = new float[layers.Length];
+        if (textureScales == null || textureScales.Length != layers.Length) textureScales = new float[layers.Length];
+        if (textures == null || textures.depth != layers.Length)textures = new Texture2DArray(textureSize, textureSize, layers.Length, textureFormat, true);
 
-        if (tints == null || tints.Length == 0) tints = layers.Select(x => x.tint).ToArray();
-        if (startHeights == null || startHeights.Length == 0) startHeights = layers.Select(x => x.startHeight).ToArray();
-        if (blendStrengths == null|| blendStrengths.Length == 0) blendStrengths = layers.Select(x => x.blendStrength).ToArray();
-        if (tintStrengts == null || tintStrengts.Length == 0) tintStrengts = layers.Select(x => x.tintStrength).ToArray();
-        if (textureScales == null || textureScales.Length == 0) textureScales = layers.Select(x => x.textureScale).ToArray();
-        if (textures == null ) textures = GenerateTextureArray(layers.Select(x => x.texture).ToArray()); ;
+        for (int i = 0; i < layers.Length; i++)
+        {
+            tints[i] = layers[i].tint;
+            startHeights[i] = layers[i].startHeight;
+            blendStrengths[i] = layers[i].blendStrength;
+            tintStrengths[i] = layers[i].tintStrength;
+            textureScales[i] = layers[i].textureScale;
+            textures.SetPixels(layers[i].texture.GetPixels(), i);
+        }
+        textures.Apply();
 
-
-        material.SetInt ("layerCount", layers.Length);
-		material.SetColorArray ("baseColours", tints);
-		material.SetFloatArray ("baseStartHeights", startHeights);
-		material.SetFloatArray ("baseBlends", blendStrengths);
-		material.SetFloatArray ("baseColourStrength", tintStrengts);
-		material.SetFloatArray ("baseTextureScales", textureScales);
-		material.SetTexture ("baseTextures", textures);
+         material.SetInt ("layerCount", layers.Length);
+         material.SetColorArray ("baseColours", tints);
+         material.SetFloatArray ("baseStartHeights", startHeights);
+         material.SetFloatArray ("baseBlends", blendStrengths);
+         material.SetFloatArray ("baseColourStrength", tintStrengths);
+         material.SetFloatArray ("baseTextureScales", textureScales);
+         material.SetTexture ("baseTextures", textures);
 
 		UpdateMeshHeights (material, savedMinHeight, savedMaxHeight);
 	}
@@ -46,17 +54,8 @@ public class TextureSettings : UpdatableData {
 		savedMinHeight = minHeight;
 		savedMaxHeight = maxHeight;
 
-		material.SetFloat ("minHeight", minHeight);
-		material.SetFloat ("maxHeight", maxHeight);
-	}
-
-	Texture2DArray GenerateTextureArray(Texture2D[] textures) {
-		Texture2DArray textureArray = new Texture2DArray (textureSize, textureSize, textures.Length, textureFormat, true);
-		for (int i = 0; i < textures.Length; i++) {
-			textureArray.SetPixels (textures [i].GetPixels (), i);
-		}
-		textureArray.Apply ();
-		return textureArray;
+        material.SetFloat ("minHeight", minHeight);
+        material.SetFloat ("maxHeight", maxHeight);
 	}
 
 	[System.Serializable]
