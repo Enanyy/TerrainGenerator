@@ -23,6 +23,7 @@ public class TreeSettings : UpdatableData
         public float minScale = 0.3f;
         public float maxScale = 5f;
 
+
     }
     
     public TreeLayer[] trees;

@@ -152,11 +152,11 @@ public class TerrainPreview : MonoBehaviour
             float step = (layer.maxScale - layer.minScale) / LODSettings.numSupportedLODs;
             float current = layer.minScale + editorPreviewLOD * step * (1 + 1f / LODSettings.numSupportedLODs);
 
-            Random.InitState(layer.seed);
+            System.Random random = new System.Random(layer.seed);
 
-            for (int i = 0; i < mHeightMap.width; i += Random.Range(1, layer.distance))
+            for (int i = 0; i < mHeightMap.width; i += random.Next(1, layer.distance))
             {
-                for (int j = 0; j < mHeightMap.height; j += Random.Range(1, layer.distance))
+                for (int j = 0; j < mHeightMap.height; j += random.Next(1, layer.distance))
                 {
                     float y = mHeightMap.values[i, j] / heightMapSettings.heightMultiplier;
 
@@ -166,21 +166,20 @@ public class TerrainPreview : MonoBehaviour
                         float x = i * meshSettings.meshScale - meshSettings.meshWorldSize / 2;
                         float z = -j * meshSettings.meshScale + meshSettings.meshWorldSize / 2;
 
-                        Vector2 r = Random.insideUnitCircle * layer.range;
+                        float rx = random.Next(0, 100) / 100f;
+                        float ry = random.Next(0, 100) / 100f;
 
-                        Vector3 position = new Vector3(x + r.x, y * heightMapSettings.heightMultiplier, z + r.y);
+                        Vector3 position = new Vector3(x + rx, y * heightMapSettings.heightMultiplier, z + ry);
 
-                        float scale = Random.Range(layer.minScale, layer.maxScale);
+                        float scale = random.Next((int)(layer.minScale * 100), (int)(layer.maxScale * 100)) / 100f;
                         if (scale >= current)
                         {
-
                             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
                             go.transform.SetParent(meshRenderer.transform);
                             go.transform.localPosition = position;
 
-                            go.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
-                           // go.transform.localScale = Vector3.one * scale;
+                            go.transform.rotation = Quaternion.Euler(0, random.Next(0, 360), 0);
                         }
                     }
                 }

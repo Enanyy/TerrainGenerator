@@ -16,27 +16,27 @@ MonoBehaviour:
   - distance: 5
     mesh: {fileID: 4300000, guid: fa9c2840c04722d4ebdc29f0066d6903, type: 3}
     material: {fileID: 2100000, guid: 3ac234b2daff169459970c6d92b5fd1d, type: 2}
-    minHeight: 0.06
-    maxHeight: 0.065
+    minHeight: 0.018
+    maxHeight: 0.04
     seed: 0
     range: 2
-    minScale: 10
+    minScale: 20
     maxScale: 100
   - distance: 5
     mesh: {fileID: 4300000, guid: 6384b2ff09099174cb9f6dffb22aa418, type: 3}
     material: {fileID: 2100000, guid: 3a7d2ba733afab54485a6e0562cd8bf8, type: 2}
-    minHeight: 0.065
+    minHeight: 0.068
     maxHeight: 0.07
     seed: 0
     range: 2
-    minScale: 10
+    minScale: 20
     maxScale: 100
-  - distance: 4
+  - distance: 5
     mesh: {fileID: 4300000, guid: 9fdb226b58d6893478ca58b765ec773d, type: 3}
-    material: {fileID: 2100000, guid: 23745abd50dd2a54ba7f221047064b2a, type: 2}
+    material: {fileID: 2100000, guid: 3ac234b2daff169459970c6d92b5fd1d, type: 2}
     minHeight: 0.07
-    maxHeight: 0.08
+    maxHeight: 0.09
     seed: 0
     range: 2
-    minScale: 10
+    minScale: 20
     maxScale: 100

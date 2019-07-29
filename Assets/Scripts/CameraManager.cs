@@ -117,6 +117,7 @@ public class CameraManager : MonoBehaviour
     public LODSettings lodSettings;
  
     public float scrollSpeed = 20;
+    public float heightOffset = 0.5f;
 
     public float distance;
 
@@ -227,7 +228,7 @@ public class CameraManager : MonoBehaviour
             float distance;
             mPlane.Raycast(ray, out distance);
             Vector3 point = ray.GetPoint(distance);
-            point.y += 0.1f;
+            point.y += heightOffset;
             return point;
         }
         return Vector3.zero;
