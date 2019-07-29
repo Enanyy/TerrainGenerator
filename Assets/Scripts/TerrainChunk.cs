@@ -149,7 +149,7 @@ public class TerrainChunk
             {
                 for (int j = 0; j < mHeightMap.height; j += random.Next(1, layer.distance))
                 {
-                    float y = mHeightMap.values[i, j];
+                    float y = mHeightMap.values[i, j] / mTerrain.heightMapSettings.heightMultiplier;
 
                     if (y > layer.minHeight && y < layer.maxHeight)
                     {
@@ -160,7 +160,7 @@ public class TerrainChunk
                         float rx = random.Next(0, 100) / 100f;
                         float ry = random.Next(0, 100) / 100f;
 
-                        Vector4 v4 = new Vector4(x + rx, y, z + ry, 1);
+                        Vector4 v4 = new Vector4(x + rx, y * mTerrain.heightMapSettings.heightMultiplier, z + ry, 1);
                         v4 = matrix4X4 * v4;
 
                         Vector3 position = new Vector3(v4.x,v4.y,v4.z);

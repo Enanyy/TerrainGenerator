@@ -12,9 +12,9 @@ public class TreeSettings : UpdatableData
         public int distance = 4;
         public Mesh mesh;
         public Material material;
-        [Range(0,100)]
+        [Range(0,1)]
         public float minHeight;
-        [Range(0, 100)]
+        [Range(0, 1)]
         public float maxHeight;
 
         public int seed = 0;

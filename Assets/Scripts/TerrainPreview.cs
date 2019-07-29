@@ -158,7 +158,7 @@ public class TerrainPreview : MonoBehaviour
             {
                 for (int j = 0; j < mHeightMap.height; j += Random.Range(1, layer.distance))
                 {
-                    float y = mHeightMap.values[i, j];
+                    float y = mHeightMap.values[i, j] / heightMapSettings.heightMultiplier;
 
                     if (y > layer.minHeight && y < layer.maxHeight)
                     {
@@ -168,7 +168,7 @@ public class TerrainPreview : MonoBehaviour
 
                         Vector2 r = Random.insideUnitCircle * layer.range;
 
-                        Vector3 position = new Vector3(x + r.x, y, z + r.y);
+                        Vector3 position = new Vector3(x + r.x, y * heightMapSettings.heightMultiplier, z + r.y);
 
                         float scale = Random.Range(layer.minScale, layer.maxScale);
                         if (scale >= current)
