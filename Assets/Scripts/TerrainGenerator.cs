@@ -129,9 +129,10 @@ public class TerrainGenerator : MonoBehaviour {
             }
         }
 
-        if (distance >= lodSettings.detailLevels[lodSettings.detailLevels.Length - 1].distance)
+        var maxLOD = lodSettings.detailLevels[lodSettings.detailLevels.Length - 1];
+        if (distance >= maxLOD.distance)
         {
-            detailLevel = lodSettings.detailLevels[lodSettings.detailLevels.Length - 1].lod;
+            detailLevel = maxLOD.lod;
         }
 
         if (detailLevel != lod)
@@ -143,7 +144,7 @@ public class TerrainGenerator : MonoBehaviour {
                 it.Current.Value.UpdateTerrainChunk();
             }
         }
-
+      
         textureSettings.ApplyToMaterial(material);
         textureSettings.UpdateMeshHeights(material, heightMapSettings.minHeight, heightMapSettings.maxHeight);
 

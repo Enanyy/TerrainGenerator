@@ -130,20 +130,23 @@ public class TerrainPreview : MonoBehaviour
 
     private void GenerateTree()
     {
-        int count = meshRenderer.transform.childCount;
-        for (int i = count - 1; i >= 0; i--)
-        {
-            var child = meshRenderer.transform.GetChild(i);
-            if (child != null)
-            {
-                DestroyImmediate(child.gameObject);
-            }
-        }
+        int childCount = meshRenderer.transform.childCount;
+        
 
         if (generateTree == false)
         {
+            for (int i = childCount - 1; i >= 0; i--)
+            {
+                var child = meshRenderer.transform.GetChild(i);
+                if (child != null)
+                {
+                    DestroyImmediate(child.gameObject);
+                }
+            }
             return;
         }
+
+        int index = 0;
 
         for (int k = 0; k < treeSettings.trees.Length; k++)
         {
@@ -174,15 +177,36 @@ public class TerrainPreview : MonoBehaviour
                         float scale = random.Next((int)(layer.minScale * 100), (int)(layer.maxScale * 100)) / 100f;
                         if (scale >= current)
                         {
-                            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+                            GameObject go = null;
+                            if (index < childCount)
+                            {
+                                go = meshRenderer.transform.GetChild(index).gameObject;
+                            }
+                            else
+                            {
+                               go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                            }
+
 
                             go.transform.SetParent(meshRenderer.transform);
                             go.transform.localPosition = position;
 
                             go.transform.rotation = Quaternion.Euler(0, random.Next(0, 360), 0);
+
+                            index++;
                         }
                     }
                 }
+            }
+        }
+
+        for (int i = childCount - 1; i  >= index; i --)
+        {
+            var child = meshRenderer.transform.GetChild(i);
+            if (child != null)
+            {
+                DestroyImmediate(child.gameObject);
             }
         }
     }
