@@ -7,12 +7,12 @@ public static class ThreadQueue  {
 	static List<IThread> threads = new List<IThread>();
     public static int maxThreads = 8;
     static int numThreads;
-    public static void DoFunc<T>(Func<T> func, Action<T> callback)
+    public static void RunAsync<T>(Func<T> func, Action<T> callback)
     {      
         threads.Add(new ThreadFunc<T>(func,callback));
 	}
 
-    public static void DoAction(Action func, Action callback, float delay = 0)
+    public static void RunAsync(Action func, Action callback, float delay = 0)
     {
         if (delay <= 0)
         {

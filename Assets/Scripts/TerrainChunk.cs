@@ -71,7 +71,7 @@ public class TerrainChunk
         if (mRequestingHeightMap == false)
         {
             mRequestingHeightMap = true;
-            ThreadQueue.DoAction(()=>mHeightMap.GenerateHeightMap(mTerrain.heightMapSettings, mSampleCenter),OnHeightMapReceived);
+            ThreadQueue.RunAsync(()=>mHeightMap.GenerateHeightMap(mTerrain.heightMapSettings, mSampleCenter),OnHeightMapReceived);
         }
     }
 
@@ -106,7 +106,7 @@ public class TerrainChunk
 
                 var matrix4x4 = mMeshObject.transform.localToWorldMatrix;
 
-                ThreadQueue.DoAction(()=> GenerateTree(matrix4x4, lod), null);
+                ThreadQueue.RunAsync(()=> GenerateTree(matrix4x4, lod), null);
             }
             else
             {
@@ -228,7 +228,7 @@ class LODMesh
         {
             sampleCenter = heightMap.sampleCenter;
             mRequestingMesh = true;
-            ThreadQueue.DoFunc(() => heightMap.GenerateMeshData(meshSettings,lod), OnMeshDataReceived);
+            ThreadQueue.RunAsync(() => heightMap.GenerateMeshData(meshSettings,lod), OnMeshDataReceived);
         }
     }
 }
