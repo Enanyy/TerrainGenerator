@@ -31,7 +31,13 @@ public static class ThreadQueue  {
         for(int i = 0; i < threads.Count;)
         {
             var t = threads[i];
-            if(t == null || t.isCompleted)
+            if (t == null)
+            {
+                threads.RemoveAt(i);
+
+                continue;
+            }
+            else if (t.isCompleted)
             {
                 if (t.exception == null)
                 {
@@ -44,7 +50,7 @@ public static class ThreadQueue  {
 
                 threads.RemoveAt(i);
 
-                continue;  
+                continue;
             }
             else if (t.isExecuted == false)
             {
