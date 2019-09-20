@@ -214,9 +214,9 @@ class LODMesh
 		this.lod = lod;
 	}
 
-	void OnMeshDataReceived(object meshDataObject)
+	void OnMeshDataReceived(MeshData meshDataObject)
     {
-		mesh = ((MeshData)meshDataObject).CreateMesh ();
+		mesh = meshDataObject.CreateMesh ();
         mRequestingMesh = false;
 
 		updateCallback ();

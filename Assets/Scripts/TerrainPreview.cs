@@ -37,8 +37,6 @@ public class TerrainPreview : MonoBehaviour
     public bool autoUpdate;
 
 
-
-
     public void DrawMapInEditor()
     {
         textureSettings.ApplyToMaterial(terrainMaterial);
@@ -55,8 +53,8 @@ public class TerrainPreview : MonoBehaviour
             mHeightMap.GenerateHeightMap(heightMapSettings, Vector2.zero);
             DrawMesh(mHeightMap.GenerateMeshData(meshSettings, editorPreviewLOD));
            
-                GenerateTree();
-            
+            GenerateTree();
+         
 
         }
         else if (drawMode == DrawMode.FalloffMap)
