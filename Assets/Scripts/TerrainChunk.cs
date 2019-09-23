@@ -106,7 +106,7 @@ public class TerrainChunk
 
                 var matrix4x4 = mMeshObject.transform.localToWorldMatrix;
 
-                ThreadQueue.RunAsync(()=> GenerateTree(matrix4x4, lod), null);
+                ThreadQueue.RunAsync(()=> GenerateTree(matrix4x4, lod));
             }
             else
             {

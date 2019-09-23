@@ -1,27 +1,21 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Threading;
+using UnityEngine;
 
 public static class ThreadQueue  {
 
 	static List<IThread> threads = new List<IThread>();
     public static int maxThreads = 8;
     static int numThreads;
-    public static void RunAsync<T>(Func<T> func, Action<T> callback)
+    public static void RunAsync<T>(Func<T> func, Action<T> callback = null,float delay = 0)
     {      
-        threads.Add(new ThreadFunc<T>(func,callback));
+        threads.Add(new ThreadFunc<T>(func,callback,delay));
 	}
 
-    public static void RunAsync(Action func, Action callback, float delay = 0)
+    public static void RunAsync(Action func, Action callback= null, float delay = 0)
     {
-        if (delay <= 0)
-        {
-            threads.Add(new ThreadAction(func, callback));
-        }
-        else
-        {
-            threads.Add(new ThreadDelayAction(func, callback, delay));
-        }
+        threads.Add(new ThreadAction(func, callback, delay));
     }
 
     
@@ -45,7 +39,7 @@ public static class ThreadQueue  {
                 }
                 else
                 {
-                    UnityEngine.Debug.LogError(t.exception);
+                    Debug.LogError(t.exception);
                 }
 
                 threads.RemoveAt(i);
@@ -54,15 +48,18 @@ public static class ThreadQueue  {
             }
             else if (t.isExecuted == false)
             {
-                t.Execute();
+                if (t.isExecuteable)
+                {
+                    t.Execute();
+                }
             }
 
-
+       
             i++;
         }
     }
 
-    public static bool RunAsync(Action action)
+    private static bool RunAsync(Action action)
     {
         if(numThreads>= maxThreads)
         {
@@ -72,30 +69,31 @@ public static class ThreadQueue  {
         {
             Interlocked.Increment(ref numThreads);
 
-            new Thread(delegate () { RunThread(action); }).Start();
+            new Thread(delegate () 
+            {
+                try
+                {
+                    if (action != null)
+                    {
+                        action();
+                    }
+                }
+                catch
+                {
+
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref numThreads);
+                }
+
+            }).Start();
 
             return true;
         }
 
     }
-    private static void RunThread(Action action)
-    {
-        try
-        {
-            if(action!= null)
-            {
-                action();
-            }
-        }
-        catch
-        {
 
-        }
-        finally
-        {
-            Interlocked.Decrement(ref numThreads);
-        }
-    }
 
 
     interface IThread
@@ -103,6 +101,7 @@ public static class ThreadQueue  {
         Exception exception { get; }
         bool isExecuted { get; }
         bool isCompleted { get; }
+        bool isExecuteable { get; }
         void Execute();
         void OnCompleted();
 
@@ -114,12 +113,19 @@ public static class ThreadQueue  {
         public readonly Action func;
         public bool isExecuted { get; private set; }
         public bool isCompleted { get; private set; }
-        public ThreadAction(Action func, Action callback)
+
+        private float mExecuteTime;
+        public bool isExecuteable
+        {
+            get { return Time.time >= mExecuteTime; }
+        }
+        public ThreadAction(Action func, Action callback,float delay = 0)
         {
             this.callback = callback;
             this.func = func;
             isCompleted = false;
             isExecuted = false;
+            mExecuteTime = Time.time + delay ;
         }
 
         public void Execute()
@@ -161,11 +167,18 @@ public static class ThreadQueue  {
 
         public bool isExecuted { get; private set; }
         public bool isCompleted { get; private set; }
-        public ThreadFunc (Func<T> func, Action<T> callback)
+
+        private float mExecuteTime;
+        public bool isExecuteable
+        {
+            get { return Time.time >= mExecuteTime; }
+        }
+        public ThreadFunc (Func<T> func, Action<T> callback, float delay = 0)
 		{
 			this.callback = callback;
             this.func = func;
-		}
+            mExecuteTime = Time.time + delay;
+        }
         public void Execute()
         {
             isExecuted = RunAsync(() =>
@@ -193,59 +206,4 @@ public static class ThreadQueue  {
             }
         }
 	}
-
-    class ThreadDelayAction:IThread
-    {
-        public Exception exception { get; private set; }
-        public readonly Action callback;
-        public readonly Action func;
-        public bool isExecuted { get; private set; }
-        public bool isCompleted { get; private set; }
-
-        private float mDelay;
-        public ThreadDelayAction(Action func, Action callback, float delay)
-        {
-            mDelay = delay;
-            this.callback = callback;
-            this.func = func;
-            isCompleted = false;
-            isExecuted = false;
-        }
-
-        public void Execute()
-        {
-            if (mDelay > 0)
-            {
-                mDelay -= UnityEngine.Time.deltaTime;
-            }
-            else
-            {
-                isExecuted = RunAsync(() =>
-                {
-                    try
-                    {
-                        if (func != null)
-                        {
-                            func();
-                        }
-                        isCompleted = true;
-                    }
-                    catch (Exception e)
-                    {
-                        exception = e;
-                    }
-                });
-            }
-        }
-
-
-        public void OnCompleted()
-        {
-            if (callback != null)
-            {
-                callback();
-            }
-        }
-    }
-
 }
