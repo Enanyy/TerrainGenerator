@@ -7,8 +7,8 @@ public class HeightMap
 {
     public  Vector2 sampleCenter { get; private set; }
 	public  float[,] values { get; private set; }
-	public  float minValue { get; private set; }
-	public  float maxValue { get; private set; }
+	public  float minValue { get;  set; }
+	public  float maxValue { get;  set; }
 
     public readonly int width;
     public readonly int height;

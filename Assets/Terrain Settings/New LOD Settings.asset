@@ -13,7 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   autoUpdate: 1
   minDistance: 60
-  maxDistance: 800
+  maxDistance: 1200
   detailLevels:
   - lod: 0
     distance: 80
