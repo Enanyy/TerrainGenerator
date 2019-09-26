@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class HeightMap
 {
-    public  Vector2 sampleCenter;
-	public  float[,] values;
-	public  float minValue;
-	public  float maxValue;
+    public  Vector2 sampleCenter { get; private set; }
+	public  float[,] values { get; private set; }
+	public  float minValue { get; private set; }
+	public  float maxValue { get; private set; }
 
     public readonly int width;
     public readonly int height;

@@ -203,11 +203,11 @@ public class TerrainChunk
 
 class LODMesh
 {
-    public Vector2 sampleCenter;
-    public Mesh mesh;
+    public Vector2 sampleCenter { get; private set; }
+    public Mesh mesh { get; private set; }
     private bool mRequestingMesh;
 
-	public int lod;
+    public readonly int lod;
 	public event System.Action updateCallback;
 
 	public LODMesh(int lod) {

@@ -9,50 +9,51 @@ public class TextureSettings : UpdatableData {
 
 	public TextureLayer[] layers;
 
-	float savedMinHeight;
-	float savedMaxHeight;
+	private float mMinHeight;
+	private float mMaxHeight;
 
-    private Color[] tints;
-    private float[] startHeights;
-    private float[] blendStrengths;
-    private float[] tintStrengths;
-    private float[] textureScales;
-    private Texture2DArray textures;
+    private Color[] mLayerColors;
+    private float[] mLayerSrartHeights;
+    private float[] mLayerBlendStrengths;
+    private float[] mLayerColorStrengths;
+    private float[] mLayerTextureScales;
+    private Texture2DArray mLayerTextures;
 
     public void ApplyToMaterial(Material material)
     {
-        if (tints == null || tints.Length != layers.Length) tints= new Color[layers.Length];
-        if (startHeights == null || startHeights.Length != layers.Length) startHeights = new float[layers.Length];
-        if (blendStrengths == null || blendStrengths.Length != layers.Length) blendStrengths = new float[layers.Length];
-        if (tintStrengths == null || tintStrengths.Length != layers.Length) tintStrengths = new float[layers.Length];
-        if (textureScales == null || textureScales.Length != layers.Length) textureScales = new float[layers.Length];
-        if (textures == null || textures.depth != layers.Length)textures = new Texture2DArray(textureSize, textureSize, layers.Length, textureFormat, true);
+        if (mLayerColors == null || mLayerColors.Length != layers.Length) mLayerColors = new Color[layers.Length];
+        if (mLayerSrartHeights == null || mLayerSrartHeights.Length != layers.Length) mLayerSrartHeights = new float[layers.Length];
+        if (mLayerBlendStrengths == null || mLayerBlendStrengths.Length != layers.Length) mLayerBlendStrengths = new float[layers.Length];
+        if (mLayerColorStrengths == null || mLayerColorStrengths.Length != layers.Length) mLayerColorStrengths = new float[layers.Length];
+        if (mLayerTextureScales == null || mLayerTextureScales.Length != layers.Length) mLayerTextureScales = new float[layers.Length];
+        if (mLayerTextures == null || mLayerTextures.depth != layers.Length) mLayerTextures = new Texture2DArray(textureSize, textureSize, layers.Length, textureFormat, true);
 
         for (int i = 0; i < layers.Length; i++)
         {
-            tints[i] = layers[i].tint;
-            startHeights[i] = layers[i].startHeight;
-            blendStrengths[i] = layers[i].blendStrength;
-            tintStrengths[i] = layers[i].tintStrength;
-            textureScales[i] = layers[i].textureScale;
-            textures.SetPixels(layers[i].texture.GetPixels(), i);
+            mLayerColors[i] = layers[i].tint;
+            mLayerSrartHeights[i] = layers[i].startHeight;
+            mLayerBlendStrengths[i] = layers[i].blendStrength;
+            mLayerColorStrengths[i] = layers[i].tintStrength;
+            mLayerTextureScales[i] = layers[i].textureScale;
+            mLayerTextures.SetPixels(layers[i].texture.GetPixels(), i);
         }
-        textures.Apply();
+        mLayerTextures.Apply();
 
-         material.SetInt ("_LayerCount", layers.Length);
-         material.SetColorArray ("_LayerColors", tints);
-         material.SetFloatArray ("_LayerStartHeights", startHeights);
-         material.SetFloatArray ("_LayerBlends", blendStrengths);
-         material.SetFloatArray ("_LayerColorStrengths", tintStrengths);
-         material.SetFloatArray ("_LayerTextureScales", textureScales);
-         material.SetTexture ("_LayerTextures", textures);
+        material.SetInt("_LayerCount", layers.Length);
+        material.SetColorArray("_LayerColors", mLayerColors);
+        material.SetFloatArray("_LayerStartHeights", mLayerSrartHeights);
+        material.SetFloatArray("_LayerBlends", mLayerBlendStrengths);
+        material.SetFloatArray("_LayerColorStrengths", mLayerColorStrengths);
+        material.SetFloatArray("_LayerTextureScales", mLayerTextureScales);
+        material.SetTexture("_LayerTextures", mLayerTextures);
 
-		UpdateMeshHeights (material, savedMinHeight, savedMaxHeight);
-	}
+        UpdateMeshHeights(material, mMinHeight, mMaxHeight);
+    }
 
-	public void UpdateMeshHeights(Material material, float minHeight, float maxHeight) {
-		savedMinHeight = minHeight;
-		savedMaxHeight = maxHeight;
+	public void UpdateMeshHeights(Material material, float minHeight, float maxHeight)
+    {
+		mMinHeight = minHeight;
+		mMaxHeight = maxHeight;
 
         material.SetFloat ("_MinHeight", minHeight);
         material.SetFloat ("_MaxHeight", maxHeight);
