@@ -39,13 +39,13 @@ public class TextureSettings : UpdatableData {
         }
         textures.Apply();
 
-         material.SetInt ("layerCount", layers.Length);
-         material.SetColorArray ("baseColours", tints);
-         material.SetFloatArray ("baseStartHeights", startHeights);
-         material.SetFloatArray ("baseBlends", blendStrengths);
-         material.SetFloatArray ("baseColourStrength", tintStrengths);
-         material.SetFloatArray ("baseTextureScales", textureScales);
-         material.SetTexture ("baseTextures", textures);
+         material.SetInt ("_LayerCount", layers.Length);
+         material.SetColorArray ("_LayerColors", tints);
+         material.SetFloatArray ("_LayerStartHeights", startHeights);
+         material.SetFloatArray ("_LayerBlends", blendStrengths);
+         material.SetFloatArray ("_LayerColorStrengths", tintStrengths);
+         material.SetFloatArray ("_LayerTextureScales", textureScales);
+         material.SetTexture ("_LayerTextures", textures);
 
 		UpdateMeshHeights (material, savedMinHeight, savedMaxHeight);
 	}
@@ -54,8 +54,8 @@ public class TextureSettings : UpdatableData {
 		savedMinHeight = minHeight;
 		savedMaxHeight = maxHeight;
 
-        material.SetFloat ("minHeight", minHeight);
-        material.SetFloat ("maxHeight", maxHeight);
+        material.SetFloat ("_MinHeight", minHeight);
+        material.SetFloat ("_MaxHeight", maxHeight);
 	}
 
 	[System.Serializable]

@@ -13,33 +13,41 @@
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
 
-		const static int maxLayerCount = 8;
-		const static float epsilon = 1E-4;
+		// texture arrays are not available everywhere,
+		// only compile shader on platforms where they are
+		#pragma require 2darray
 
-		int layerCount;
-		float3 baseColours[maxLayerCount];
-		float baseStartHeights[maxLayerCount];
-		float baseBlends[maxLayerCount];
+		const static int MAX_LAYER_COUNT = 8;
+		const static float EPSILON = 1E-4;
 
-		float minHeight;
-		float maxHeight;
+		int _LayerCount;
+		float3 _LayerColors[MAX_LAYER_COUNT];
+		float _LayerStartHeights[MAX_LAYER_COUNT];
+		float _LayerBlends[MAX_LAYER_COUNT];
+
+		float _MinHeight;
+		float _MaxHeight;
 
 		struct Input {
 			float3 worldPos;
 		};
 
-		float inverseLerp(float a, float b, float value) {
+		float InverseLerp(float a, float b, float value)
+		{
 			return saturate((value-a)/(b-a));
 		}
 
-		void surf (Input IN, inout SurfaceOutputStandard o) {
-			float heightPercent = inverseLerp(minHeight,maxHeight, IN.worldPos.y);
-			for (int i = 0; i < layerCount; i ++) {
-				//float drawStrength = saturate(sign(heightPercent - baseStartHeights[i]));
-				
-				float drawStrength = inverseLerp(-baseBlends[i]/2 - epsilon, baseBlends[i]/2, heightPercent - baseStartHeights[i]);
+		void surf (Input IN, inout SurfaceOutputStandard o) 
+		{
+			float heightPercent = InverseLerp(_MinHeight,_MaxHeight, IN.worldPos.y);
 
-				o.Albedo = o.Albedo * (1-drawStrength) + baseColours[i] * drawStrength;
+			for (int i = 0; i < _LayerCount; i ++)
+			{
+				//float drawStrength = saturate(sign(heightPercent - _LayerStartHeights[i]));
+				
+				float drawStrength = InverseLerp(-_LayerBlends[i]/2 - EPSILON, _LayerBlends[i]/2, heightPercent - _LayerStartHeights[i]);
+
+				o.Albedo = o.Albedo * (1 - drawStrength) + _LayerColors[i] * drawStrength;
 			}
 		}
 
