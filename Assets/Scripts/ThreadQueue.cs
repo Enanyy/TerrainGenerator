@@ -130,18 +130,22 @@ public static class ThreadQueue  {
 
         public void Execute()
         {
-           isExecuted = RunAsync(() => {
+            isExecuted = RunAsync(() =>
+            {
                 try
                 {
-                    if(func!= null)
+                    if (func != null)
                     {
                         func();
                     }
-                   isCompleted = true;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     exception = e;
+                }
+                finally
+                {
+                    isCompleted = true;
                 }
             });
         }
@@ -189,11 +193,14 @@ public static class ThreadQueue  {
                     {
                        data = func();
                     }
-                    isCompleted = true;
                 }
                 catch (Exception e)
                 {
                     exception = e;
+                }
+                finally
+                {
+                    isCompleted = true;
                 }
             });
         }
