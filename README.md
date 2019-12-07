@@ -9,6 +9,8 @@
   3.LOD远近缩放。
   
   4.基于高度的地表植物配置。
+  
+  Dependence：https://github.com/SebLague/Procedural-Landmass-Generation
 
 ## 示例截图
 ![](doc/example/gif)
