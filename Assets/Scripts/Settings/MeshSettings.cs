@@ -23,15 +23,15 @@ public class MeshSettings : UpdatableData {
 		get {
             if (useFlatShading)
             {
-                return supportedFlatshadedChunkSizes[flatshadedChunkSizeIndex] + 1;
+                return supportedFlatshadedChunkSizes[flatshadedChunkSizeIndex];
             }
-			return supportedChunkSizes [chunkSizeIndex] + 1;
+			return supportedChunkSizes [chunkSizeIndex];
 		}
 	}
 
 	public float meshWorldSize {
 		get {
-			return (numVertsPerLine - 1) * meshScale;
+			return (numVertsPerLine) * meshScale;
 		}
 	}
 

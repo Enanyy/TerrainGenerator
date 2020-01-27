@@ -13,6 +13,8 @@ public class FPS : MonoBehaviour
 {
     private float m_fFPS;
 
+    public bool SetTargetFrameRate = false;
+
     void Awake()
     {
         
@@ -21,7 +23,10 @@ public class FPS : MonoBehaviour
     void Start()
     {
         // 必要参数设置
-        Application.targetFrameRate = 60;                  // 最大帧率
+        if (SetTargetFrameRate)
+        {
+            Application.targetFrameRate = 60;                  // 最大帧率
+        }
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         FPSInit();
