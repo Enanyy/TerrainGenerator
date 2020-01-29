@@ -145,8 +145,8 @@ public class TerrainGenerator : MonoBehaviour {
         }
         
       
-        textureSettings.ApplyToMaterial(material);
-        textureSettings.UpdateMeshHeights(material, heightMapSettings.minHeight, heightMapSettings.maxHeight);
+        //textureSettings.ApplyToMaterial(material);
+        //textureSettings.UpdateMeshHeights(material, heightMapSettings.minHeight, heightMapSettings.maxHeight);
     }
 
     private void Update()
