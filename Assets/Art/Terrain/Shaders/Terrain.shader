@@ -61,15 +61,16 @@
 
 			for (int i = 0; i < _LayerCount; i ++) 
 			{
+				//不插值
+				//float drawStrength = saturate(sign(heightPercent - _LayerStartHeights[i]));
+				//插值
 				float drawStrength = InverseLerp(-_LayerBlends[i]/2 - EPSILON, _LayerBlends[i]/2, heightPercent - _LayerStartHeights[i]);
 
 				float3 baseColor = _LayerColors[i] * _LayerColorStrengths[i];
 				float3 textureColor = Triplanar(IN.worldPos, _LayerTextureScales[i], blendAxes, i) * (1-_LayerColorStrengths[i]);
 
 				o.Albedo = o.Albedo * (1 - drawStrength) + (baseColor+textureColor) * drawStrength;
-			}
-
-		
+			}	
 		}
 
 
