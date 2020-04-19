@@ -12,28 +12,18 @@ public class HeightMap
 
     public readonly int width;
     public readonly int height;
-    private Vector2[] mOctaveOffsets;
 
-    private System.Random mRandom;
-    private AnimationCurve mAnimationCurve;
     public HeightMap(int width, int height)
     {
-        this.width = width +1;
-        this.height = height +1;
-        values = new float[this.width,this.height];
+        this.width = width;
+        this.height = height;
+        values = new float[width,height];
     }
 
     public void GenerateNoise(NoiseSettings settings, Vector2 sampleCenter)
     {
-        if(mRandom == null)
-        {
-            mRandom = new System.Random(settings.seed);
-        }
-       
-        if(mOctaveOffsets == null)
-        {
-            mOctaveOffsets = new Vector2[settings.octaves];
-        }
+        System.Random prng = new System.Random(settings.seed);
+        Vector2[] octaveOffsets = new Vector2[settings.octaves];
 
         float maxPossibleHeight = 0;
         float amplitude = 1;
@@ -41,9 +31,9 @@ public class HeightMap
 
         for (int i = 0; i < settings.octaves; i++)
         {
-            float offsetX = mRandom.Next(-100000, 100000) + settings.offset.x + sampleCenter.x;
-            float offsetY = mRandom.Next(-100000, 100000) - settings.offset.y - sampleCenter.y;
-            mOctaveOffsets[i] = new Vector2(offsetX, offsetY);
+            float offsetX = prng.Next(-100000, 100000) + settings.offset.x + sampleCenter.x;
+            float offsetY = prng.Next(-100000, 100000) - settings.offset.y - sampleCenter.y;
+            octaveOffsets[i] = new Vector2(offsetX, offsetY);
 
             maxPossibleHeight += amplitude;
             amplitude *= settings.persistance;
@@ -55,18 +45,20 @@ public class HeightMap
         float halfWidth = width / 2f;
         float halfHeight = height / 2f;
 
+
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
+
                 amplitude = 1;
                 frequency = 1;
                 float noiseHeight = 0;
 
                 for (int i = 0; i < settings.octaves; i++)
                 {
-                    float sampleX = (x - halfWidth + mOctaveOffsets[i].x) / settings.scale * frequency;
-                    float sampleY = (y - halfHeight + mOctaveOffsets[i].y) / settings.scale * frequency;
+                    float sampleX = (x - halfWidth + octaveOffsets[i].x) / settings.scale * frequency;
+                    float sampleY = (y - halfHeight + octaveOffsets[i].y) / settings.scale * frequency;
 
                     float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
                     noiseHeight += perlinValue * amplitude;
@@ -111,11 +103,7 @@ public class HeightMap
 
         GenerateNoise(settings.noiseSettings,sampleCenter);
 
-        if(mAnimationCurve == null)
-        {
-            mAnimationCurve = new AnimationCurve(settings.heightCurve.keys);
-        }
-        
+        AnimationCurve heightCurve_threadsafe = new AnimationCurve(settings.heightCurve.keys);
 
         minValue = float.MaxValue;
         maxValue = float.MinValue;
@@ -124,7 +112,7 @@ public class HeightMap
         {
             for (int j = 0; j < height; j++)
             {
-                values[i, j] = mAnimationCurve.Evaluate(values[i, j]) * settings.heightMultiplier;
+                values[i, j] = heightCurve_threadsafe.Evaluate(values[i, j]) * settings.heightMultiplier;
 
                 if (values[i, j] > maxValue)
                 {
@@ -161,37 +149,20 @@ public class HeightMap
         return Mathf.Pow(value, a) / (Mathf.Pow(value, a) + Mathf.Pow(b - b * value, a));
     }
 
-    public MeshData CreateMeshData(MeshSettings meshSettings, int lod)
+    public MeshData GenerateMeshData(MeshSettings meshSettings, int lod)
     {
-        int offset = (lod == 0) ? 1 : lod * 2;
-        int verticesPerLine = (width - 1) / offset + 1;
-
-        MeshData meshData = new MeshData(verticesPerLine, meshSettings.useFlatShading);
-
-        return meshData;
-    }
-
-    public void  GenerateMeshData(ref MeshData meshData, MeshSettings meshSettings, int lod)
-    {
-        if(meshData == null)
-        {
-            return;
-        }
-
-        meshData.Clear();
-
         float topLeftX = (width - 1) / -2f;
         float topLeftZ = (height - 1) / 2f;
 
-        int offset = (lod == 0) ? 1 : lod * 2;
+        int meshSimplificationIncrement = (lod == 0) ? 1 : lod * 2;
+        int verticesPerLine = (width - 1) / meshSimplificationIncrement + 1;
 
+        MeshData meshData = new MeshData(verticesPerLine, verticesPerLine, meshSettings.useFlatShading);
         int vertexIndex = 0;
 
-        int verticesPerLine = meshData.width;
-
-        for (int y = 0; y < height; y += offset)
+        for (int y = 0; y < height; y += meshSimplificationIncrement)
         {
-            for (int x = 0; x < width; x += offset)
+            for (int x = 0; x < width; x += meshSimplificationIncrement)
             {
 
                 float heightY = values[x, y];
@@ -200,7 +171,7 @@ public class HeightMap
                     (topLeftZ - y) * meshSettings.meshScale);
                 Vector2 uv = new Vector2(x / (float)width, y / (float)height);
 
-                meshData.AddVertice(vertexIndex, vertice, uv); 
+                meshData.AddVertice(vertexIndex, vertice, uv);
 
                 if (x < width - 1 && y < height - 1)
                 {
@@ -214,7 +185,7 @@ public class HeightMap
 
         meshData.ProcessMesh();
 
-      
+        return meshData;
     }
 
     public Texture2D GenerateTexture()
