@@ -21,12 +21,12 @@ public class TextureSettings : UpdatableData {
 
     public void ApplyToMaterial(Material material)
     {
-        if (mLayerColors == null || mLayerColors.Length != layers.Length) mLayerColors = new Color[layers.Length];
-        if (mLayerSrartHeights == null || mLayerSrartHeights.Length != layers.Length) mLayerSrartHeights = new float[layers.Length];
-        if (mLayerBlendStrengths == null || mLayerBlendStrengths.Length != layers.Length) mLayerBlendStrengths = new float[layers.Length];
-        if (mLayerColorStrengths == null || mLayerColorStrengths.Length != layers.Length) mLayerColorStrengths = new float[layers.Length];
-        if (mLayerTextureScales == null || mLayerTextureScales.Length != layers.Length) mLayerTextureScales = new float[layers.Length];
-        if (mLayerTextures == null || mLayerTextures.depth != layers.Length) mLayerTextures = new Texture2DArray(textureSize, textureSize, layers.Length, textureFormat, true);
+        if (mLayerColors == null) mLayerColors = new Color[layers.Length];
+        if (mLayerSrartHeights == null) mLayerSrartHeights = new float[layers.Length];
+        if (mLayerBlendStrengths == null) mLayerBlendStrengths = new float[layers.Length];
+        if (mLayerColorStrengths == null ) mLayerColorStrengths = new float[layers.Length];
+        if (mLayerTextureScales == null) mLayerTextureScales = new float[layers.Length];
+        if (mLayerTextures == null) mLayerTextures = new Texture2DArray(textureSize, textureSize, layers.Length, textureFormat, true);
 
         for (int i = 0; i < layers.Length; i++)
         {

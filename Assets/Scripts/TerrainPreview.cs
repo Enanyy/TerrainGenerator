@@ -36,6 +36,7 @@ public class TerrainPreview : MonoBehaviour
 
     public bool autoUpdate;
 
+    private MeshData mMeshData;
 
     public void DrawMapInEditor()
     {
@@ -51,7 +52,14 @@ public class TerrainPreview : MonoBehaviour
         else if (drawMode == DrawMode.Mesh)
         {
             mHeightMap.GenerateHeightMap(heightMapSettings, Vector2.zero);
-            DrawMesh(mHeightMap.GenerateMeshData(meshSettings, editorPreviewLOD));
+
+            if(mMeshData == null)
+            {
+                mMeshData = mHeightMap.CreateMeshData(meshSettings, editorPreviewLOD);
+            }
+            mHeightMap.GenerateMeshData(ref mMeshData, meshSettings, editorPreviewLOD);
+
+            DrawMesh(mMeshData);
            
             GenerateTree();
          

@@ -46,7 +46,7 @@ public class TerrainGenerator : MonoBehaviour {
         int chunkSize = (int)(distance / meshSettings.meshWorldSize);
         if (distance % meshSettings.meshWorldSize > 0) chunkSize++;
 
-        terrainSizeX = chunkSize / 2 + 1;
+        terrainSizeX =  chunkSize / 2 + 1;
 
         //distance = Mathf.Abs(CameraManager.Instance.leftTop.z - CameraManager.Instance.leftBottom.z);
 
@@ -55,7 +55,7 @@ public class TerrainGenerator : MonoBehaviour {
 
         //terrainSizeY = chunkSize / 2 + 2;
 
-        terrainSizeY = terrainSizeX - (terrainSizeX - 1) / 2;
+        terrainSizeY =  terrainSizeX - (terrainSizeX - 1) / 2;
 
         Vector3 center = CameraManager.Instance.center;
 
@@ -69,9 +69,8 @@ public class TerrainGenerator : MonoBehaviour {
             for (int xOffset = -terrainSizeX; xOffset <= terrainSizeX; xOffset++)
             {
                 Vector2 coord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
-                TerrainChunk chunk = null;
-                mTerrainChunkDic.TryGetValue(coord, out chunk);
-                if (chunk != null)
+               
+                if(mTerrainChunkDic.TryGetValue(coord, out TerrainChunk chunk))
                 {
                     mTerrainChunkDic2.Add(coord, chunk);
                     mTerrainChunkDic.Remove(coord);
@@ -120,7 +119,7 @@ public class TerrainGenerator : MonoBehaviour {
         UpdateViewChunk();
 
         int detailLevel = 0;
-
+        
         for (int i = 0; i < lodSettings.detailLevels.Length; ++i)
         {
             if (distance < lodSettings.detailLevels[i].distance)
@@ -134,7 +133,7 @@ public class TerrainGenerator : MonoBehaviour {
         {
             detailLevel = maxLOD.lod;
         }
-
+        
         if (detailLevel != lod)
         {
             lod = detailLevel;
@@ -144,11 +143,10 @@ public class TerrainGenerator : MonoBehaviour {
                 it.Current.Value.UpdateTerrainChunk();
             }
         }
+        
       
-        textureSettings.ApplyToMaterial(material);
-        textureSettings.UpdateMeshHeights(material, heightMapSettings.minHeight, heightMapSettings.maxHeight);
-
-
+        //textureSettings.ApplyToMaterial(material);
+        //textureSettings.UpdateMeshHeights(material, heightMapSettings.minHeight, heightMapSettings.maxHeight);
     }
 
     private void Update()

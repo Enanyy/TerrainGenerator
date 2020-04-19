@@ -13,12 +13,18 @@ public class MeshData
 
     private bool mUseFlatShading;
 
-    public MeshData(int meshWidth, int meshHeight, bool useFlatShading)
+    public readonly int width;
+
+    private Mesh mMesh;
+
+    public MeshData(int meshWidth, bool useFlatShading)
     {
+        width = meshWidth;
         mUseFlatShading = useFlatShading;
-        mVertices = new Vector3[meshWidth * meshHeight];
-        mUVs = new Vector2[meshWidth * meshHeight];
-        mTriangles = new int[(meshWidth - 1) * (meshHeight - 1) * 6];
+        mVertices = new Vector3[meshWidth * meshWidth];
+        mUVs = new Vector2[meshWidth * meshWidth];
+        mTriangles = new int[(meshWidth - 1) * (meshWidth - 1) * 6];
+        mBakedNormals = new Vector3[mVertices.Length];
     }
 
     public void AddVertice(int index, Vector3 vertice, Vector2 uv)
@@ -35,11 +41,13 @@ public class MeshData
         mTriangleIndex += 3;
     }
 
-
-    Vector3[] CalculateNormals()
+    public void  Clear()
     {
+        mTriangleIndex = 0;
+    }
 
-        Vector3[] vertexNormals = new Vector3[mVertices.Length];
+    void CalculateNormals()
+    {
         int triangleCount = mTriangles.Length / 3;
         for (int i = 0; i < triangleCount; i++)
         {
@@ -49,18 +57,16 @@ public class MeshData
             int vertexIndexC = mTriangles[normalTriangleIndex + 2];
 
             Vector3 triangleNormal = SurfaceNormalFromIndices(vertexIndexA, vertexIndexB, vertexIndexC);
-            vertexNormals[vertexIndexA] += triangleNormal;
-            vertexNormals[vertexIndexB] += triangleNormal;
-            vertexNormals[vertexIndexC] += triangleNormal;
+            mBakedNormals[vertexIndexA] += triangleNormal;
+            mBakedNormals[vertexIndexB] += triangleNormal;
+            mBakedNormals[vertexIndexC] += triangleNormal;
         }
 
         
-        for (int i = 0; i < vertexNormals.Length; i++)
+        for (int i = 0; i < mBakedNormals.Length; i++)
         {
-            vertexNormals[i].Normalize();
+            mBakedNormals[i].Normalize();
         }
-
-        return vertexNormals;
 
     }
 
@@ -83,14 +89,11 @@ public class MeshData
         }
         else
         {
-            BakeNormals();
+            CalculateNormals();
         }
     }
 
-    void BakeNormals()
-    {
-        mBakedNormals = CalculateNormals();
-    }
+ 
 
     void FlatShading()
     {
@@ -110,18 +113,23 @@ public class MeshData
 
     public Mesh CreateMesh()
     {
-        Mesh mesh = new Mesh();
-        mesh.vertices = mVertices;
-        mesh.triangles = mTriangles;
-        mesh.uv = mUVs;
+        if(mMesh == null)
+        {
+            mMesh = new Mesh();
+        }
+        mMesh.Clear();
+
+        mMesh.vertices = mVertices;
+        mMesh.triangles = mTriangles;
+        mMesh.uv = mUVs;
         if (mUseFlatShading)
         {
-            mesh.RecalculateNormals();
+            mMesh.RecalculateNormals();
         }
         else
         {
-            mesh.normals = mBakedNormals;
+            mMesh.normals = mBakedNormals;
         }
-        return mesh;
+        return mMesh;
     }
 }

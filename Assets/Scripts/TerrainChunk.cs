@@ -24,18 +24,19 @@ public class TerrainChunk
     private bool mGeneratingTree;
 	public TerrainChunk(TerrainGenerator terrain, Vector2 coord)
     {
-        this.mTerrain = terrain;
+        mTerrain = terrain;
 
-        this.mHeightMap = new HeightMap(mTerrain.meshSettings.numVertsPerLine, mTerrain.meshSettings.numVertsPerLine);
-
-        SetCoord(coord);
+        mHeightMap = new HeightMap(mTerrain.meshSettings.numVertsPerLine, mTerrain.meshSettings.numVertsPerLine);
 
 		mLODMeshes = new LODMesh[terrain.lodSettings.detailLevels.Length];
 		for (int i = 0; i < terrain.lodSettings.detailLevels.Length; i++) {
 			mLODMeshes[i] = new LODMesh(terrain.lodSettings.detailLevels[i].lod);
             mLODMeshes[i].updateCallback += UpdateTerrainChunk;
         }
-	}
+
+        SetCoord(coord);
+
+    }
 
     public void SetCoord(Vector2 coord)
     {
@@ -70,7 +71,7 @@ public class TerrainChunk
     {
         if (mRequestingHeightMap == false)
         {
-            mRequestingHeightMap = true;
+            mRequestingHeightMap = true;       
             ThreadQueue.RunAsync(()=>mHeightMap.GenerateHeightMap(mTerrain.heightMapSettings, mSampleCenter),OnHeightMapReceived);
         }
     }
@@ -104,9 +105,12 @@ public class TerrainChunk
             {
                 mMeshFilter.mesh = lodMesh.mesh;
 
-                var matrix4x4 = mMeshObject.transform.localToWorldMatrix;
+                if (mTerrain.generateTree)
+                {
+                    var matrix4x4 = mMeshObject.transform.localToWorldMatrix;
 
-                ThreadQueue.RunAsync(()=> GenerateTree(matrix4x4, lod));
+                    ThreadQueue.RunAsync(() => GenerateTree(matrix4x4, lod));
+                }
             }
             else
             {
@@ -210,13 +214,14 @@ class LODMesh
     public readonly int lod;
 	public event System.Action updateCallback;
 
+    private MeshData mMeshData;
 	public LODMesh(int lod) {
 		this.lod = lod;
 	}
 
-	void OnMeshDataReceived(MeshData meshDataObject)
+	void OnMeshDataReceived()
     {
-		mesh = meshDataObject.CreateMesh ();
+		mesh = mMeshData.CreateMesh ();
         mRequestingMesh = false;
 
 		updateCallback ();
@@ -228,7 +233,11 @@ class LODMesh
         {
             sampleCenter = heightMap.sampleCenter;
             mRequestingMesh = true;
-            ThreadQueue.RunAsync(() => heightMap.GenerateMeshData(meshSettings,lod), OnMeshDataReceived);
+            if(mMeshData== null)
+            {
+                mMeshData = heightMap.CreateMeshData(meshSettings, lod);
+            }
+            ThreadQueue.RunAsync(() => heightMap.GenerateMeshData(ref mMeshData, meshSettings, lod), OnMeshDataReceived);
         }
     }
 }
